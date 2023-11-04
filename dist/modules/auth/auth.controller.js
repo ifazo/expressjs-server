@@ -16,12 +16,13 @@ exports.authController = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const config_1 = __importDefault(require("../../config"));
 const user_model_1 = __importDefault(require("../user/user.model"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const jwtHelpers_1 = require("../../helpers/jwtHelpers");
-const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = req.body;
         const existingUser = yield user_model_1.default.findOne({
-            phoneNumber: data.phoneNumber,
+            email: data.email,
         });
         if (existingUser) {
             throw new Error("User with the same phone number already exists");
@@ -30,8 +31,7 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const saltRounds = config_1.default.salt_rounds || 10;
         const hashedPassword = yield bcrypt_1.default.hash(password, Number(saltRounds));
         const newData = Object.assign(Object.assign({}, data), { password: hashedPassword });
-        const newUser = new user_model_1.default(newData);
-        const result = yield newUser.save();
+        const result = yield user_model_1.default.create(newData);
         return res.status(200).json({
             success: true,
             statusCode: 200,
@@ -42,17 +42,16 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     catch (error) {
         res.status(500).json({
             success: false,
-            statusCode: 500,
             message: "Failed to create user",
             errorMessages: error.message,
         });
     }
 });
-const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = req.body;
-        const { phoneNumber, password } = data;
-        const user = yield user_model_1.default.findOne({ phoneNumber });
+        const { email, password } = data;
+        const user = yield user_model_1.default.findOne({ email });
         if (!user) {
             throw new Error("User not found");
         }
@@ -60,9 +59,14 @@ const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!isPasswordValid) {
             throw new Error("Invalid credentials");
         }
-        const payload = { id: user._id, role: user.role };
-        const accessToken = (0, jwtHelpers_1.signJwt)(payload, "1d");
-        const refreshToken = (0, jwtHelpers_1.signJwt)(payload, "365d");
+        const payload = { id: user._id, email: user.email, role: user.role };
+        const secret = config_1.default.jwt_secret_key;
+        const accessToken = jsonwebtoken_1.default.sign(payload, secret, {
+            expiresIn: "1d",
+        });
+        const refreshToken = jsonwebtoken_1.default.sign(payload, secret, {
+            expiresIn: "365d",
+        });
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: true,
@@ -80,27 +84,29 @@ const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     catch (error) {
         res.status(500).json({
             success: false,
-            statusCode: 500,
             message: "Failed to log in",
             error: error.message,
         });
     }
 });
-const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const token = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const refreshToken = req.cookies.refreshToken;
+        // const refreshToken = req.headers.authorization?.split(" ")[1];
         if (!refreshToken) {
             return res.status(401).json({
                 success: false,
-                statusCode: 401,
                 message: "Unauthorized",
                 data: null,
             });
         }
         const decodedToken = (0, jwtHelpers_1.verifyJwt)(refreshToken);
-        const { id, role } = decodedToken;
-        const payload = { id, role };
-        const accessToken = (0, jwtHelpers_1.signJwt)(payload, "1d");
+        const { id, email, role } = decodedToken;
+        const payload = { id, email, role };
+        const secret = config_1.default.jwt_secret_key;
+        const accessToken = jsonwebtoken_1.default.sign(payload, secret, {
+            expiresIn: "1d",
+        });
         return res.status(200).json({
             success: true,
             statusCode: 200,
@@ -114,14 +120,13 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         console.error(error);
         res.status(500).json({
             success: false,
-            statusCode: 500,
             message: "Failed to get refresh token",
             error: error.message,
         });
     }
 });
 exports.authController = {
-    createUser,
-    userLogin,
-    refreshToken,
+    signUp,
+    signIn,
+    token,
 };

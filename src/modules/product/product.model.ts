@@ -1,7 +1,18 @@
 import { Schema, model } from "mongoose";
-import IProduct from "./product.interface";
 
-const productSchema: Schema = new Schema({
+export interface IProduct {
+  name: string;
+  image: string;
+  category: string;
+  price: string;
+  status: string;
+  rating: number;
+  description: string;
+  features: Array<string>;
+  date: Date;
+}
+
+const productSchema: Schema = new Schema<IProduct>({
   name: { type: String, required: true, unique: true },
   image: { type: String, required: true },
   category: { type: String, required: true },

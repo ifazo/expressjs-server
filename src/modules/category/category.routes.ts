@@ -8,6 +8,4 @@ router
   .post(categoryController.postCategory)
   .get(categoryController.getCategories);
 
-router.route("/:id").get(categoryController.getCategory);
-
 export const categoryRoutes = router;

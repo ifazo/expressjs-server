@@ -9,8 +9,8 @@ router
   .get( productController.getProducts);
 router
   .route("/:id")
-  .get( productController.getProductById)
-  .patch( productController.updateProductById)
-  .delete( productController.deleteProductById);
+  .get( productController.getProduct)
+  .patch( productController.updateProduct)
+  .delete( productController.deleteProduct);
 
 export const productRoutes = router;

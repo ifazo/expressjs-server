@@ -1,49 +1,60 @@
 import { Request, Response } from "express";
 import { JwtPayload } from "jsonwebtoken";
 import { verifyJwt } from "../../helpers/jwtHelpers";
-import Product from "./product.model";
-import IProduct from "./product.interface";
+import Product, { IProduct } from "./product.model";
 
 const createProduct = async (req: Request, res: Response) => {
   try {
-    const data = req.body;
-    const result = await Product.create(data);
+    const data: IProduct = req.body;
+    const product = await Product.create(data);
 
     res.status(201).json({
       success: true,
       statusCode: 201,
-      message: "Cow created successfully",
-      data: result,
+      message: "Product created successfully",
+      data: product,
     });
-  } catch (error: any) {
+  } catch (err) {
+    console.log(err);
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: "Failed to create cow",
-      errorMessages: error.message,
+      message: "Failed to create product",
+      data: null,
     });
   }
 };
 
 const getProducts = async (req: Request, res: Response) => {
   try {
-    const products = await Product.find();
-
-    res.status(200).json({
-      success: true,
-      message: "Cows retrieved successfully",
-      data: products,
-    });
-  } catch (error: any) {
+    const category = req.query.category as string;
+    if (category) {
+      const products = await Product.find({ category: category });
+      return res.status(200).json({
+        success: true,
+        message: "Products by category retrieved successfully",
+        data: products,
+      });
+    }
+    else {
+      const products = await Product.find();
+      res.status(200).json({
+        success: true,
+        message: "Products retrieved successfully",
+        data: products,
+      });
+    }
+  } catch (err) {
+    console.log(err)
     res.status(500).json({
       success: false,
-      message: "Failed to retrieve cows",
-      errorMessages: error.message,
+      message: "Failed to retrieve products",
+      data: null,
     });
   }
 };
 
-const getProductById = async (req: Request, res: Response) => {
+const getProduct = async (req: Request, res: Response) => {
   try {
     const productId = req.params.id;
     const product = await Product.findById(productId);
@@ -61,17 +72,18 @@ const getProductById = async (req: Request, res: Response) => {
       message: "Product retrieved successfully",
       data: product,
     });
-  } catch (error: any) {
+  } catch (err) {
+    console.log(err);
     res.status(500).json({
       success: false,
       statusCode: 500,
       message: "Failed to retrieve product",
-      errorMessages: error.message,
+      data: null,
     });
   }
 };
 
-const updateProductById = async (req: Request, res: Response) => {
+const updateProduct = async (req: Request, res: Response) => {
   try {
     const productId = req.params.id;
     const token = req.headers.authorization as string;
@@ -95,17 +107,18 @@ const updateProductById = async (req: Request, res: Response) => {
       message: "Cow updated successfully",
       data: updatedProduct,
     });
-  } catch (error: any) {
+  } catch (err) {
+    console.log(err);
     res.status(500).json({
       success: false,
       statusCode: 500,
       message: "Failed to update cow",
-      errorMessages: error.message,
+      data: null,
     });
   }
 };
 
-const deleteProductById = async (req: Request, res: Response) => {
+const deleteProduct = async (req: Request, res: Response) => {
   try {
     const productId = req.params.id;
     const token = req.headers.authorization as string;
@@ -114,7 +127,6 @@ const deleteProductById = async (req: Request, res: Response) => {
     if (!userId) {
       res.status(404).json({
         success: false,
-        statusCode: 404,
         message: "You are not authorized to delete this cow",
       });
     }
@@ -122,16 +134,15 @@ const deleteProductById = async (req: Request, res: Response) => {
 
     res.status(200).json({
       success: true,
-      statusCode: 200,
       message: "Cow deleted successfully",
       data: deleteProduct,
     });
-  } catch (error: any) {
+  } catch (err) {
+    console.log(err);
     res.status(500).json({
       success: false,
-      statusCode: 500,
       message: "Failed to delete cow",
-      errorMessages: error.message,
+      data: null,
     });
   }
 };
@@ -139,7 +150,7 @@ const deleteProductById = async (req: Request, res: Response) => {
 export const productController = {
   createProduct,
   getProducts,
-  getProductById,
-  updateProductById,
-  deleteProductById,
+  getProduct,
+  updateProduct,
+  deleteProduct,
 };

@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.userController = void 0;
 const user_model_1 = __importDefault(require("./user.model"));
 const jwtHelpers_1 = require("../../helpers/jwtHelpers");
-const getAllUsers = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getUsers = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = yield user_model_1.default.find();
         res.status(200).json({
@@ -34,7 +34,7 @@ const getAllUsers = (_req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
     }
 });
-const getSingleUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const result = yield user_model_1.default.findById(id);
@@ -109,7 +109,7 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         });
     }
 });
-const getMyProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const token = req.headers.authorization;
         const decodedToken = (0, jwtHelpers_1.verifyJwt)(token);
@@ -138,7 +138,7 @@ const getMyProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
     }
 });
-const updateMyProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = req.body;
         const token = req.headers.authorization;
@@ -169,10 +169,10 @@ const updateMyProfile = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.userController = {
-    getAllUsers,
-    getSingleUser,
+    getUsers,
+    getUser,
     updateUser,
     deleteUser,
-    getMyProfile,
-    updateMyProfile,
+    getProfile,
+    updateProfile,
 };

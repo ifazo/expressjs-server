@@ -29,7 +29,6 @@ const signUp = async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      statusCode: 500,
       message: "Failed to create user",
       errorMessages: error.message,
     });
@@ -48,9 +47,14 @@ const signIn = async (req: Request, res: Response) => {
     if (!isPasswordValid) {
       throw new Error("Invalid credentials");
     }
-    const payload = { id: user._id, role: user.role } as JwtPayload;
-    const accessToken = signJwt(payload, "1d") as Secret;
-    const refreshToken = signJwt(payload, "365d") as Secret;
+    const payload = { id: user._id, email: user.email, role: user.role } as JwtPayload;
+    const secret = config.jwt_secret_key as Secret;
+    const accessToken = jwt.sign(payload, secret, {
+      expiresIn: "1d",
+    });
+    const refreshToken = jwt.sign(payload, secret, {
+      expiresIn: "365d",
+    });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -69,7 +73,6 @@ const signIn = async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      statusCode: 500,
       message: "Failed to log in",
       error: error.message,
     });
@@ -78,20 +81,22 @@ const signIn = async (req: Request, res: Response) => {
 
 const token = async (req: Request, res: Response) => {
   try {
-    // const refreshToken = req.cookies.refreshToken;
-    const refreshToken = req.headers.authorization?.split(" ")[1];
+    const refreshToken = req.cookies.refreshToken;
+    // const refreshToken = req.headers.authorization?.split(" ")[1];
     if (!refreshToken) {
       return res.status(401).json({
         success: false,
-        statusCode: 401,
         message: "Unauthorized",
         data: null,
       });
     }
     const decodedToken = verifyJwt(refreshToken);
-    const { id, role } = decodedToken as any;
-    const payload = { id, role } as JwtPayload;
-    const accessToken = signJwt(payload, "1d");
+    const { id,email, role } = decodedToken;
+    const payload = { id, email, role } as JwtPayload;
+    const secret = config.jwt_secret_key as Secret;
+    const accessToken = jwt.sign(payload, secret, {
+      expiresIn: "1d",
+    });
 
     return res.status(200).json({
       success: true,
@@ -105,7 +110,6 @@ const token = async (req: Request, res: Response) => {
     console.error(error);
     res.status(500).json({
       success: false,
-      statusCode: 500,
       message: "Failed to get refresh token",
       error: error.message,
     });
