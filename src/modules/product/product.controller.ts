@@ -54,6 +54,24 @@ const getProducts = async (req: Request, res: Response) => {
   }
 };
 
+const getRandomProducts = async (req: Request, res: Response) => {
+  try {
+    const products = await Product.aggregate([{ $sample: { size: 6 } }]);
+    res.status(200).json({
+      success: true,
+      message: "Products retrieved successfully",
+      data: products,
+    });
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve products",
+      data: null,
+    });
+  }
+}
+
 const getProduct = async (req: Request, res: Response) => {
   try {
     const productId = req.params.id;
@@ -150,6 +168,7 @@ const deleteProduct = async (req: Request, res: Response) => {
 export const productController = {
   createProduct,
   getProducts,
+  getRandomProducts,
   getProduct,
   updateProduct,
   deleteProduct,

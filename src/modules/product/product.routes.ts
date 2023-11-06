@@ -7,6 +7,9 @@ router
   .route("/")
   .post( productController.createProduct)
   .get( productController.getProducts);
+
+router.get("/random", productController.getRandomProducts);
+
 router
   .route("/:id")
   .get( productController.getProduct)
