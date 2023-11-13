@@ -20,23 +20,20 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const jwtHelpers_1 = require("../../helpers/jwtHelpers");
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const data = req.body;
-        const existingUser = yield user_model_1.default.findOne({
-            email: data.email,
-        });
+        const { name, email, password } = req.body;
+        const existingUser = yield user_model_1.default.findOne({ email });
         if (existingUser) {
             throw new Error("User with the same phone number already exists");
         }
-        const { password } = data;
         const saltRounds = config_1.default.salt_rounds || 10;
         const hashedPassword = yield bcrypt_1.default.hash(password, Number(saltRounds));
-        const newData = Object.assign(Object.assign({}, data), { password: hashedPassword });
-        const result = yield user_model_1.default.create(newData);
+        const data = { name, email, password: hashedPassword };
+        const user = yield user_model_1.default.create(data);
         return res.status(200).json({
             success: true,
             statusCode: 200,
             message: "User created successfully",
-            data: result,
+            data: user,
         });
     }
     catch (error) {
@@ -49,8 +46,7 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const data = req.body;
-        const { email, password } = data;
+        const { email, password } = req.body;
         const user = yield user_model_1.default.findOne({ email });
         if (!user) {
             throw new Error("User not found");
@@ -59,7 +55,12 @@ const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!isPasswordValid) {
             throw new Error("Invalid credentials");
         }
-        const payload = { id: user._id, email: user.email, role: user.role };
+        const payload = {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+        };
         const secret = config_1.default.jwt_secret_key;
         const accessToken = jsonwebtoken_1.default.sign(payload, secret, {
             expiresIn: "1d",
@@ -77,7 +78,7 @@ const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             statusCode: 200,
             message: "User logged in successfully",
             data: {
-                accessToken: accessToken,
+                accessToken,
             },
         });
     }
@@ -112,7 +113,7 @@ const token = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             statusCode: 200,
             message: "Refresh token generated successfully",
             data: {
-                accessToken: accessToken,
+                accessToken,
             },
         });
     }

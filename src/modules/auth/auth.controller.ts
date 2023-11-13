@@ -7,24 +7,21 @@ import { signJwt, verifyJwt } from "../../helpers/jwtHelpers";
 
 const signUp = async (req: Request, res: Response) => {
   try {
-    const data = req.body;
-    const existingUser = await User.findOne({
-      email: data.email,
-    });
+    const { name, email, password } = req.body;
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       throw new Error("User with the same phone number already exists");
     }
-    const { password } = data;
     const saltRounds = config.salt_rounds || 10;
     const hashedPassword = await bcrypt.hash(password, Number(saltRounds));
-    const newData = { ...data, password: hashedPassword };
-    const result = await User.create(newData);
+    const data = { name, email, password: hashedPassword };
+    const user = await User.create(data);
 
     return res.status(200).json({
       success: true,
       statusCode: 200,
       message: "User created successfully",
-      data: result,
+      data: user,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -37,8 +34,7 @@ const signUp = async (req: Request, res: Response) => {
 
 const signIn = async (req: Request, res: Response) => {
   try {
-    const data = req.body;
-    const { email, password } = data;
+    const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) {
       throw new Error("User not found");
@@ -47,7 +43,12 @@ const signIn = async (req: Request, res: Response) => {
     if (!isPasswordValid) {
       throw new Error("Invalid credentials");
     }
-    const payload = { id: user._id, email: user.email, role: user.role } as JwtPayload;
+    const payload = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    } as JwtPayload;
     const secret = config.jwt_secret_key as Secret;
     const accessToken = jwt.sign(payload, secret, {
       expiresIn: "1d",
@@ -67,7 +68,7 @@ const signIn = async (req: Request, res: Response) => {
       statusCode: 200,
       message: "User logged in successfully",
       data: {
-        accessToken: accessToken,
+        accessToken,
       },
     });
   } catch (error: any) {
@@ -82,7 +83,6 @@ const signIn = async (req: Request, res: Response) => {
 const token = async (req: Request, res: Response) => {
   try {
     const refreshToken = req.cookies.refreshToken;
-    // const refreshToken = req.headers.authorization?.split(" ")[1];
     if (!refreshToken) {
       return res.status(401).json({
         success: false,
@@ -91,7 +91,7 @@ const token = async (req: Request, res: Response) => {
       });
     }
     const decodedToken = verifyJwt(refreshToken);
-    const { id,email, role } = decodedToken;
+    const { id, email, role } = decodedToken;
     const payload = { id, email, role } as JwtPayload;
     const secret = config.jwt_secret_key as Secret;
     const accessToken = jwt.sign(payload, secret, {
@@ -103,7 +103,7 @@ const token = async (req: Request, res: Response) => {
       statusCode: 200,
       message: "Refresh token generated successfully",
       data: {
-        accessToken: accessToken,
+        accessToken,
       },
     });
   } catch (error: any) {
