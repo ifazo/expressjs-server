@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
-import { JwtPayload } from "jsonwebtoken";
-import { verifyJwt } from "../../helpers/jwtHelpers";
+import { JwtPayload, verify } from "jsonwebtoken";
 import Product, { IProduct } from "./product.model";
 
 const createProduct = async (req: Request, res: Response) => {
@@ -105,7 +104,7 @@ const updateProduct = async (req: Request, res: Response) => {
   try {
     const productId = req.params.id;
     const token = req.headers.authorization as string;
-    const verifyToken: JwtPayload = verifyJwt(token);
+    const verifyToken: JwtPayload = verify(token, process.env.JWT_SECRET_KEY as string) as JwtPayload;
     const userId = verifyToken?.id;
     if (!userId) {
       res.status(404).json({
@@ -140,7 +139,7 @@ const deleteProduct = async (req: Request, res: Response) => {
   try {
     const productId = req.params.id;
     const token = req.headers.authorization as string;
-    const decoded: JwtPayload = verifyJwt(token);
+    const decoded: JwtPayload = verify(token, process.env.JWT_SECRET_KEY as string) as JwtPayload;
     const userId = decoded?.id;
     if (!userId) {
       res.status(404).json({

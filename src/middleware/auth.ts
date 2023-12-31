@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import jwt, { JwtPayload, Secret } from "jsonwebtoken";
+import { JwtPayload, Secret, verify } from "jsonwebtoken";
 import config from "../config";
 
 declare global {
@@ -22,7 +22,7 @@ const auth =
           .json({ success: false, message: "You are unauthorized" });
       }
 
-      const verifiedUser = jwt.verify(
+      const verifiedUser = verify(
         token,
         config.jwt_secret_key as Secret
       ) as JwtPayload;

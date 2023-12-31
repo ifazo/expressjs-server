@@ -17,5 +17,5 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Server is running successfully");
+  res.send("Next.js Server is running successfully");
 });

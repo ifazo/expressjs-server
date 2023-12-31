@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import User from "./user.model";
-import { verifyJwt } from "../../helpers/jwtHelpers";
+import { JwtPayload, verify } from "jsonwebtoken";
 
 const getUsers = async (_req: Request, res: Response) => {
   try {
@@ -103,7 +103,7 @@ const deleteUser = async (req: Request, res: Response) => {
 const getProfile = async (req: Request, res: Response) => {
   try {
     const token = req.headers.authorization as string;
-    const decodedToken = verifyJwt(token);
+    const decodedToken = verify(token, process.env.JWT_SECRET_KEY as string) as JwtPayload;
     const userId = decodedToken?.id;
     const profile = await User.findById(userId);
     if (!profile) {
@@ -133,7 +133,7 @@ const updateProfile = async (req: Request, res: Response) => {
   try {
     const data = req.body;
     const token = req.headers.authorization as string;
-    const decodedToken = verifyJwt(token);
+    const decodedToken = verify(token, process.env.JWT_SECRET_KEY as string) as JwtPayload;
     const userId = decodedToken?.id;
     const profile = await User.findByIdAndUpdate(userId, data, { new: true });
     if (!profile) {

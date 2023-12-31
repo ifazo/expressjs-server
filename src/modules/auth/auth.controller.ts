@@ -2,8 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import config from "../../config";
 import User from "../user/user.model";
-import jwt, { JwtPayload, Secret } from "jsonwebtoken";
-import { signJwt, verifyJwt } from "../../helpers/jwtHelpers";
+import { JwtPayload, Secret, sign, verify } from "jsonwebtoken";
 
 const signUp = async (req: Request, res: Response) => {
   try {
@@ -50,10 +49,10 @@ const signIn = async (req: Request, res: Response) => {
       role: user.role,
     } as JwtPayload;
     const secret = config.jwt_secret_key as Secret;
-    const accessToken = jwt.sign(payload, secret, {
+    const accessToken = sign(payload, secret, {
       expiresIn: "1d",
     });
-    const refreshToken = jwt.sign(payload, secret, {
+    const refreshToken = sign(payload, secret, {
       expiresIn: "365d",
     });
 
@@ -90,11 +89,11 @@ const token = async (req: Request, res: Response) => {
         data: null,
       });
     }
-    const decodedToken = verifyJwt(refreshToken);
+    const decodedToken = verify(refreshToken, config.jwt_secret_key as Secret) as JwtPayload;
     const { id, email, role } = decodedToken;
     const payload = { id, email, role } as JwtPayload;
     const secret = config.jwt_secret_key as Secret;
-    const accessToken = jwt.sign(payload, secret, {
+    const accessToken = sign(payload, secret, {
       expiresIn: "1d",
     });
 
