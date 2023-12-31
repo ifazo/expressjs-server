@@ -16,8 +16,7 @@ exports.authController = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const config_1 = __importDefault(require("../../config"));
 const user_model_1 = __importDefault(require("../user/user.model"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const jwtHelpers_1 = require("../../helpers/jwtHelpers");
+const jsonwebtoken_1 = require("jsonwebtoken");
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name, email, password } = req.body;
@@ -62,10 +61,10 @@ const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             role: user.role,
         };
         const secret = config_1.default.jwt_secret_key;
-        const accessToken = jsonwebtoken_1.default.sign(payload, secret, {
+        const accessToken = (0, jsonwebtoken_1.sign)(payload, secret, {
             expiresIn: "1d",
         });
-        const refreshToken = jsonwebtoken_1.default.sign(payload, secret, {
+        const refreshToken = (0, jsonwebtoken_1.sign)(payload, secret, {
             expiresIn: "365d",
         });
         res.cookie("refreshToken", refreshToken, {
@@ -93,7 +92,6 @@ const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 const token = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const refreshToken = req.cookies.refreshToken;
-        // const refreshToken = req.headers.authorization?.split(" ")[1];
         if (!refreshToken) {
             return res.status(401).json({
                 success: false,
@@ -101,11 +99,11 @@ const token = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 data: null,
             });
         }
-        const decodedToken = (0, jwtHelpers_1.verifyJwt)(refreshToken);
+        const decodedToken = (0, jsonwebtoken_1.verify)(refreshToken, config_1.default.jwt_secret_key);
         const { id, email, role } = decodedToken;
         const payload = { id, email, role };
         const secret = config_1.default.jwt_secret_key;
-        const accessToken = jsonwebtoken_1.default.sign(payload, secret, {
+        const accessToken = (0, jsonwebtoken_1.sign)(payload, secret, {
             expiresIn: "1d",
         });
         return res.status(200).json({

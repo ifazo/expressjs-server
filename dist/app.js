@@ -19,5 +19,5 @@ exports.app.use("/api/users", user_routes_1.userRoutes);
 exports.app.use("/api/categories", category_routes_1.categoryRoutes);
 exports.app.use("/api/products", product_routes_1.productRoutes);
 exports.app.get("/", (req, res) => {
-    res.send("Server is running successfully");
+    res.send("Next.js Server is running successfully");
 });

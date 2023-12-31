@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userController = void 0;
 const user_model_1 = __importDefault(require("./user.model"));
-const jwtHelpers_1 = require("../../helpers/jwtHelpers");
+const jsonwebtoken_1 = require("jsonwebtoken");
 const getUsers = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = yield user_model_1.default.find();
@@ -112,7 +112,7 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 const getProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const token = req.headers.authorization;
-        const decodedToken = (0, jwtHelpers_1.verifyJwt)(token);
+        const decodedToken = (0, jsonwebtoken_1.verify)(token, process.env.JWT_SECRET_KEY);
         const userId = decodedToken === null || decodedToken === void 0 ? void 0 : decodedToken.id;
         const profile = yield user_model_1.default.findById(userId);
         if (!profile) {
@@ -142,7 +142,7 @@ const updateProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     try {
         const data = req.body;
         const token = req.headers.authorization;
-        const decodedToken = (0, jwtHelpers_1.verifyJwt)(token);
+        const decodedToken = (0, jsonwebtoken_1.verify)(token, process.env.JWT_SECRET_KEY);
         const userId = decodedToken === null || decodedToken === void 0 ? void 0 : decodedToken.id;
         const profile = yield user_model_1.default.findByIdAndUpdate(userId, data, { new: true });
         if (!profile) {

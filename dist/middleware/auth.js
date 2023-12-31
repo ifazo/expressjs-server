@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const jsonwebtoken_1 = require("jsonwebtoken");
 const config_1 = __importDefault(require("../config"));
 const auth = (...roles) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -22,7 +22,7 @@ const auth = (...roles) => (req, res, next) => __awaiter(void 0, void 0, void 0,
                 .status(401)
                 .json({ success: false, message: "You are unauthorized" });
         }
-        const verifiedUser = jsonwebtoken_1.default.verify(token, config_1.default.jwt_secret_key);
+        const verifiedUser = (0, jsonwebtoken_1.verify)(token, config_1.default.jwt_secret_key);
         req.user = verifiedUser;
         if (roles.length && !roles.includes(verifiedUser.role)) {
             return res
