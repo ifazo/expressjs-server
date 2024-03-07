@@ -1,9 +1,9 @@
 import express, { Application, Request, Response } from "express";
 import cors from "cors";
-import { authRoutes } from "./modules/auth/auth.routes";
-import { userRoutes } from "./modules/user/user.routes";
-import { productRoutes } from "./modules/product/product.routes";
-import { categoryRoutes } from "./modules/category/category.routes";
+import { authRoutes } from "./routes/auth.routes";
+import { userRoutes } from "./routes/user.routes";
+import { productRoutes } from "./routes/product.routes";
+import { categoryRoutes } from "./routes/category.routes";
 
 export const app: Application = express();
 
