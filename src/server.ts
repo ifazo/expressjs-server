@@ -1,17 +1,23 @@
-import mongoose from "mongoose";
+import mongoose, { ConnectOptions } from "mongoose";
 import { app } from "./app";
-import config from "./config/index";
+import config from "./config";
 
-async function main() {
+const uri = config.mongodb_uri as string;
+
+const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } } as ConnectOptions;
+
+async function run() {
   try {
-    await mongoose.connect(config.db_url as string);
-
+    await mongoose.connect(uri, clientOptions);
+    
     app.listen(config.port, () => {
-      console.log(`server is running on port ${config.port}`);
+      console.log(`Server is running on port ${config.port}`);
     });
+
   } catch (error) {
     console.log(error);
   }
 }
 
-main();
+run()
+

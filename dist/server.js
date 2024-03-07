@@ -14,13 +14,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const app_1 = require("./app");
-const index_1 = __importDefault(require("./config/index"));
-function main() {
+const config_1 = __importDefault(require("./config"));
+const uri = config_1.default.mongodb_uri;
+const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
+function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield mongoose_1.default.connect(index_1.default.db_url);
-            app_1.app.listen(index_1.default.port, () => {
-                console.log(`server is running on port ${index_1.default.port}`);
+            yield mongoose_1.default.connect(uri, clientOptions);
+            app_1.app.listen(config_1.default.port, () => {
+                console.log(`Server is running on port ${config_1.default.port}`);
             });
         }
         catch (error) {
@@ -28,4 +30,4 @@ function main() {
         }
     });
 }
-main();
+run();

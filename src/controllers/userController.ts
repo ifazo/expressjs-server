@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import User from "../models/user.model";
+import User from "../models/userModel";
 import { JwtPayload, verify } from "jsonwebtoken";
 
 const getUsers = async (_req: Request, res: Response) => {

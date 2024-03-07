@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { JwtPayload, verify } from "jsonwebtoken";
-import Product, { IProduct } from "../models/product.model";
+import Product, { IProduct } from "../models/productModel";
 
 const createProduct = async (req: Request, res: Response) => {
   try {

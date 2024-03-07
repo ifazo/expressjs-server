@@ -1,9 +1,9 @@
 import express, { Application, Request, Response } from "express";
 import cors from "cors";
-import { authRoutes } from "./routes/auth.routes";
-import { userRoutes } from "./routes/user.routes";
-import { productRoutes } from "./routes/product.routes";
-import { categoryRoutes } from "./routes/category.routes";
+import { authRoutes } from "./views/authRoutes";
+import { userRoutes } from "./views/userRoutes";
+import { productRoutes } from "./views/productRoutes";
+import { categoryRoutes } from "./views/categoryRoutes";
 
 export const app: Application = express();
 
@@ -17,5 +17,9 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Next.js Server is running successfully");
+  res.send("Hello world from express mongoose server!");
+});
+
+app.get("/api", (req: Request, res: Response) => {
+  res.send("Server api is running successfully!");
 });
