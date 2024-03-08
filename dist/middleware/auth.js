@@ -20,14 +20,14 @@ const auth = (...roles) => (req, res, next) => __awaiter(void 0, void 0, void 0,
         if (!token) {
             return res
                 .status(401)
-                .json({ success: false, message: "You are unauthorized" });
+                .send({ success: false, message: "You are unauthorized" });
         }
         const verifiedUser = (0, jsonwebtoken_1.verify)(token, config_1.default.jwt_secret_key);
         req.user = verifiedUser;
         if (roles.length && !roles.includes(verifiedUser.role)) {
             return res
                 .status(401)
-                .json({ success: false, message: "Forbidden user access request" });
+                .send({ success: false, message: "Forbidden user access request" });
         }
         next();
     }

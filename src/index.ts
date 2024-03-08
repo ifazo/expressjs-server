@@ -1,4 +1,4 @@
-import mongoose, { ConnectOptions } from "mongoose";
+import { ConnectOptions, connect } from "mongoose";
 import { app } from "./app";
 import config from "./config";
 
@@ -8,7 +8,7 @@ const clientOptions = { serverApi: { version: '1', strict: true, deprecationErro
 
 async function run() {
   try {
-    await mongoose.connect(uri, clientOptions);
+    await connect(uri, clientOptions);
     
     app.listen(config.port, () => {
       console.log(`Server is running on port ${config.port}`);

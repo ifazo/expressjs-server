@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { userController } from "../controllers/userController";
+import userController from "../controllers/userController";
 import auth from "../middleware/auth";
 import { ROLE } from "../models/userModel";
 

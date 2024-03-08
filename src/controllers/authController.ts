@@ -16,14 +16,14 @@ const signUp = async (req: Request, res: Response) => {
     const data = { name, email, password: hashedPassword };
     const user = await User.create(data);
 
-    return res.status(200).json({
+    return res.status(200).send({
       success: true,
       statusCode: 200,
       message: "User created successfully",
       data: user,
     });
   } catch (error: any) {
-    res.status(500).json({
+    res.status(500).send({
       success: false,
       message: "Failed to create user",
       errorMessages: error.message,
@@ -62,7 +62,7 @@ const signIn = async (req: Request, res: Response) => {
       sameSite: "none",
     });
 
-    return res.status(200).json({
+    return res.status(200).send({
       success: true,
       statusCode: 200,
       message: "User logged in successfully",
@@ -71,7 +71,7 @@ const signIn = async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    res.status(500).json({
+    res.status(500).send({
       success: false,
       message: "Failed to log in",
       error: error.message,
@@ -83,7 +83,7 @@ const token = async (req: Request, res: Response) => {
   try {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
-      return res.status(401).json({
+      return res.status(401).send({
         success: false,
         message: "Unauthorized",
         data: null,
@@ -97,7 +97,7 @@ const token = async (req: Request, res: Response) => {
       expiresIn: "1d",
     });
 
-    return res.status(200).json({
+    return res.status(200).send({
       success: true,
       statusCode: 200,
       message: "Refresh token generated successfully",
@@ -107,7 +107,7 @@ const token = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error(error);
-    res.status(500).json({
+    res.status(500).send({
       success: false,
       message: "Failed to get refresh token",
       error: error.message,
@@ -115,8 +115,10 @@ const token = async (req: Request, res: Response) => {
   }
 };
 
-export const authController = {
+const authController = {
   signUp,
   signIn,
   token,
 };
+
+export default authController;

@@ -6,14 +6,14 @@ const getUsers = async (_req: Request, res: Response) => {
   try {
     const result = await User.find();
 
-    res.status(200).json({
+    res.status(200).send({
       success: true,
       statusCode: 200,
       message: "Users retrieved successfully",
       data: result,
     });
   } catch (error: any) {
-    res.status(500).json({
+    res.status(500).send({
       success: false,
       statusCode: 500,
       message: "Failed to retrieve users",
@@ -27,14 +27,14 @@ const getUser = async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = await User.findById(id);
 
-    res.status(200).json({
+    res.status(200).send({
       success: true,
       statusCode: 200,
       message: "User retrieved successfully",
       data: result,
     });
   } catch (error: any) {
-    res.status(500).json({
+    res.status(500).send({
       success: false,
       statusCode: 500,
       message: "Failed to retrieve user",
@@ -49,21 +49,21 @@ const updateUser = async (req: Request, res: Response) => {
     const data = req.body;
     const user = await User.findByIdAndUpdate(id, data, { new: true });
     if (!user) {
-      return res.status(404).json({
+      return res.status(404).send({
         success: false,
         statusCode: 404,
         message: "User not found",
       });
     }
 
-    res.status(200).json({
+    res.status(200).send({
       success: true,
       statusCode: 200,
       message: "User updated successfully",
       data: user,
     });
   } catch (error: any) {
-    res.status(500).json({
+    res.status(500).send({
       success: false,
       statusCode: 500,
       message: "Failed to update user",
@@ -77,21 +77,21 @@ const deleteUser = async (req: Request, res: Response) => {
     const { id } = req.params;
     const user = await User.findByIdAndDelete(id);
     if (!user) {
-      return res.status(404).json({
+      return res.status(404).send({
         success: false,
         statusCode: 404,
         message: "User not found",
       });
     }
 
-    res.status(200).json({
+    res.status(200).send({
       success: true,
       statusCode: 200,
       message: "User deleted successfully",
       data: user,
     });
   } catch (error: any) {
-    res.status(500).json({
+    res.status(500).send({
       success: false,
       statusCode: 500,
       message: "Failed to delete user",
@@ -107,20 +107,20 @@ const getProfile = async (req: Request, res: Response) => {
     const userId = decodedToken?.id;
     const profile = await User.findById(userId);
     if (!profile) {
-      return res.status(404).json({
+      return res.status(404).send({
         success: false,
         statusCode: 404,
         message: "Profile not found",
       });
     }
-    res.status(200).json({
+    res.status(200).send({
       success: true,
       statusCode: 200,
       message: "Profile retrieved successfully",
       data: profile,
     });
   } catch (error: any) {
-    res.status(500).json({
+    res.status(500).send({
       success: false,
       statusCode: 500,
       message: "Failed to get profile",
@@ -137,20 +137,20 @@ const updateProfile = async (req: Request, res: Response) => {
     const userId = decodedToken?.id;
     const profile = await User.findByIdAndUpdate(userId, data, { new: true });
     if (!profile) {
-      return res.status(404).json({
+      return res.status(404).send({
         success: false,
         statusCode: 404,
         message: "Profile not found",
       });
     }
-    return res.status(200).json({
+    return res.status(200).send({
       success: true,
       statusCode: 200,
       message: "Profile updated successfully",
       data: profile,
     });
   } catch (error: any) {
-    res.status(500).json({
+    res.status(500).send({
       success: false,
       statusCode: 500,
       message: "Failed to get profile",
@@ -159,7 +159,7 @@ const updateProfile = async (req: Request, res: Response) => {
   }
 };
 
-export const userController = {
+const userController = {
   getUsers,
   getUser,
   updateUser,
@@ -167,3 +167,5 @@ export const userController = {
   getProfile,
   updateProfile,
 };
+
+export default userController;
