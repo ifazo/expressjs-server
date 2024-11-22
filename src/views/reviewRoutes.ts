@@ -6,4 +6,11 @@ const router = Router();
 router
   .route("/")
   .post(reviewController.createReview)
-  .get(reviewController.getReviews);
+  .get(reviewController.getProductReviews);
+
+router
+  .route("/:id")
+  .patch(reviewController.updateReview)
+  .delete(reviewController.deleteReview);
+
+export const reviewRoutes = router;

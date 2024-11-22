@@ -1,23 +1,25 @@
 import { ConnectOptions, connect } from "mongoose";
 import { app } from "./app";
-import config from "./config";
+import dotenv from "dotenv";
 
-const uri = config.mongodb_uri as string;
+dotenv.config()
 
-const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } } as ConnectOptions;
+const uri = process.env.MONGODB_URI as string;
+
+const clientOptions = {
+  serverApi: { version: "1", strict: true, deprecationErrors: true },
+} as ConnectOptions;
 
 async function run() {
   try {
     await connect(uri, clientOptions);
     
-    app.listen(config.port, () => {
-      console.log(`Server is running on port ${config.port}`);
+    app.listen(process.env.PORT, () => {
+      console.log(`Server is running on port ${process.env.PORT}`);
     });
-
   } catch (error) {
     console.log(error);
   }
 }
 
-run()
-
+run();

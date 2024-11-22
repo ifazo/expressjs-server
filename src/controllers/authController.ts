@@ -1,33 +1,30 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import config from "../config";
 import User from "../models/userModel";
 import { JwtPayload, Secret, sign, verify } from "jsonwebtoken";
+import sendResponse from "../helper/sendResponse";
 
 const signUp = async (req: Request, res: Response) => {
   try {
-    const { name, email, password } = req.body;
+    const { email, password } = req.body;
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      throw new Error("User with the same phone number already exists");
+      return sendResponse(res, 400, false, "User already exists");
     }
-    const saltRounds = config.salt_rounds || 10;
+    const saltRounds = 13;
     const hashedPassword = await bcrypt.hash(password, Number(saltRounds));
-    const data = { name, email, password: hashedPassword };
+    const data = { ...req.body, email, password: hashedPassword };
     const user = await User.create(data);
-
-    return res.status(200).send({
-      success: true,
-      statusCode: 200,
-      message: "User created successfully",
-      data: user,
-    });
+    return sendResponse(res, 201, true, "User created successfully", user);
   } catch (error: any) {
-    res.status(500).send({
-      success: false,
-      message: "Failed to create user",
-      errorMessages: error.message,
-    });
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to create user",
+      null,
+      error.message,
+    );
   }
 };
 
@@ -36,11 +33,11 @@ const signIn = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) {
-      throw new Error("User not found");
+      return sendResponse(res, 404, false, "User not found");
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new Error("Invalid credentials");
+      return sendResponse(res, 401, false, "Invalid credentials");
     }
     const payload = {
       id: user._id,
@@ -48,77 +45,159 @@ const signIn = async (req: Request, res: Response) => {
       email: user.email,
       role: user.role,
     } as JwtPayload;
-    const secret = config.jwt_secret_key as Secret;
-    const accessToken = sign(payload, secret, {
-      expiresIn: "1d",
-    });
-    const refreshToken = sign(payload, secret, {
-      expiresIn: "365d",
-    });
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-    });
-
-    return res.status(200).send({
-      success: true,
-      statusCode: 200,
-      message: "User logged in successfully",
-      data: {
-        accessToken,
-      },
+    const secret = process.env.JWT_SECRET_KEY as Secret;
+    const token = sign(payload, secret, { expiresIn: "1d" });
+    return sendResponse(res, 200, true, "User logged in successfully", {
+      token,
     });
   } catch (error: any) {
-    res.status(500).send({
-      success: false,
-      message: "Failed to log in",
-      error: error.message,
-    });
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to login",
+      null,
+      error.message,
+    );
   }
 };
 
-const token = async (req: Request, res: Response) => {
+const getProfile = async (req: Request, res: Response) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-      return res.status(401).send({
-        success: false,
-        message: "Unauthorized",
-        data: null,
-      });
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return sendResponse(
+        res,
+        401,
+        false,
+        "Authorization token is missing or invalid",
+      );
     }
-    const decodedToken = verify(refreshToken, config.jwt_secret_key as Secret) as JwtPayload;
-    const { id, email, role } = decodedToken;
-    const payload = { id, email, role } as JwtPayload;
-    const secret = config.jwt_secret_key as Secret;
-    const accessToken = sign(payload, secret, {
-      expiresIn: "1d",
-    });
-
-    return res.status(200).send({
-      success: true,
-      statusCode: 200,
-      message: "Refresh token generated successfully",
-      data: {
-        accessToken,
-      },
-    });
+    const token = authHeader.split(" ")[1];
+    let decodedToken: JwtPayload;
+    try {
+      decodedToken = verify(
+        token,
+        process.env.JWT_SECRET_KEY as Secret,
+      ) as JwtPayload;
+    } catch (err) {
+      return sendResponse(res, 401, false, "Invalid or expired token");
+    }
+    const userId = decodedToken?.id;
+    const profile = await User.findById(userId);
+    if (!profile) {
+      return sendResponse(res, 404, false, "Profile not found");
+    }
+    return sendResponse(res, 200, true, "Get profile successfully", profile);
   } catch (error: any) {
-    console.error(error);
-    res.status(500).send({
-      success: false,
-      message: "Failed to get refresh token",
-      error: error.message,
-    });
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to get profile",
+      null,
+      error.message,
+    );
+  }
+};
+
+const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const data = req.body;
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return sendResponse(
+        res,
+        401,
+        false,
+        "Authorization token is missing or invalid",
+      );
+    }
+    const token = authHeader.split(" ")[1];
+    let decodedToken: JwtPayload;
+    try {
+      decodedToken = verify(
+        token,
+        process.env.JWT_SECRET_KEY as Secret,
+      ) as JwtPayload;
+    } catch (err) {
+      return sendResponse(res, 401, false, "Invalid or expired token");
+    }
+    const userId = decodedToken?.id;
+    const profile = await User.findByIdAndUpdate(userId, data, { new: true });
+    if (!profile) {
+      return sendResponse(res, 404, false, "Profile not found");
+    }
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Profile updated successfully",
+      profile,
+    );
+  } catch (error: any) {
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to update profile",
+      null,
+      error.message,
+    );
+  }
+};
+
+const deleteProfile = async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return sendResponse(
+        res,
+        401,
+        false,
+        "Authorization token is missing or invalid",
+      );
+    }
+    const token = authHeader.split(" ")[1];
+    let decodedToken: JwtPayload;
+    try {
+      decodedToken = verify(
+        token,
+        process.env.JWT_SECRET_KEY as Secret,
+      ) as JwtPayload;
+    } catch (err) {
+      return sendResponse(res, 401, false, "Invalid or expired token");
+    }
+    const userId = decodedToken?.id;
+    const profile = await User.findByIdAndDelete(userId);
+    if (!profile) {
+      return sendResponse(res, 404, false, "Profile not found");
+    }
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Profile deleted successfully",
+      profile,
+    );
+  } catch (error: any) {
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to delete profile",
+      null,
+      error.message,
+    );
   }
 };
 
 const authController = {
   signUp,
   signIn,
-  token,
+  getProfile,
+  updateProfile,
+  deleteProfile,
 };
 
 export default authController;

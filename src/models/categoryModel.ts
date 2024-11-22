@@ -2,16 +2,20 @@ import { Schema, model } from "mongoose";
 
 interface ICategory {
   name: string;
-  image: string;
-  details: string;
-  date: Date;
+  image?: string;
+  description: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const categorySchema = new Schema<ICategory>({
+const categorySchema = new Schema<ICategory>(
+  {
     name: { type: String, required: true, unique: true },
-    image: { type: String, required: true },
-    date: { type: Date, default: Date.now },
-});
+    image: { type: String },
+    description: { type: String, required: true },
+  },
+  { timestamps: true },
+);
 
 const Category = model<ICategory>("Category", categorySchema);
 export default Category;

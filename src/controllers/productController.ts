@@ -1,24 +1,27 @@
 import { Request, Response } from "express";
-import { JwtPayload, verify } from "jsonwebtoken";
 import Product, { IProduct } from "../models/productModel";
+import sendResponse from "../helper/sendResponse";
 
 const createProduct = async (req: Request, res: Response) => {
   try {
     const data: IProduct = req.body;
     const product = await Product.create(data);
-
-    return res.status(201).send({
-      success: true,
-      message: "Product created successfully",
-      data: product,
-    });
-  } catch (err) {
-    
-    return res.status(500).send({
-      success: false,
-      message: err,
-      data: null,
-    });
+    return sendResponse(
+      res,
+      201,
+      true,
+      "Product created successfully",
+      product,
+    );
+  } catch (error: any) {
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to create product",
+      null,
+      error.message,
+    );
   }
 };
 
@@ -31,49 +34,45 @@ const getProducts = async (req: Request, res: Response) => {
     const sort = req.query.sort as string;
     const skip = parseInt(req.query.skip as string) || 0;
     const limit = parseInt(req.query.limit as string) || 10;
-    
+
     if (q) {
-      const products = await Product.find({ 
+      const products = await Product.find({
         $or: [
           { name: { $regex: q, $options: "i" } },
           { description: { $regex: q, $options: "i" } },
-          { features: { $regex: q, $options: "i" } }
-        ]
-       });
+          { features: { $regex: q, $options: "i" } },
+        ],
+      });
       return res.status(200).send({
         success: true,
         message: "Products retrieved successfully",
         data: products,
       });
-    }
-    else if (category) {
+    } else if (category) {
       const products = await Product.find({ category: category });
       return res.status(200).send({
         success: true,
         message: "Products retrieved successfully",
         data: products,
       });
-    }
-    else if (price) { 
+    } else if (price) {
       const products = await Product.find({ price: { $lt: price } });
       return res.status(200).send({
         success: true,
         message: "Products retrieved successfully",
         data: products,
       });
-    }  
-    else if (rating) {
+    } else if (rating) {
       const products = await Product.find({ rating: { $gt: rating } });
       return res.status(200).send({
         success: true,
         message: "Products retrieved successfully",
         data: products,
       });
-    }
-    else if (sort) {
+    } else if (sort) {
       let sortQuery = {};
 
-      if (sort === 'price' || sort === 'name' || sort === 'rating') {
+      if (sort === "price" || sort === "name" || sort === "rating") {
         sortQuery = { [sort]: 1 };
       } else {
         sortQuery = { createdAt: -1 };
@@ -85,17 +84,14 @@ const getProducts = async (req: Request, res: Response) => {
         message: "Products retrieved successfully",
         data: products,
       });
-    }
-
-    else if (skip && limit) {
+    } else if (skip && limit) {
       const products = await Product.find().skip(skip).limit(limit);
       return res.status(200).send({
         success: true,
         message: "Products retrieved successfully",
         data: products,
       });
-    }
-    else {
+    } else {
       const products = await Product.find();
       return res.status(200).send({
         success: true,
@@ -104,7 +100,7 @@ const getProducts = async (req: Request, res: Response) => {
       });
     }
   } catch (err) {
-    console.log(err)
+    console.log(err);
     res.status(500).send({
       success: false,
       message: err,
@@ -116,111 +112,104 @@ const getProducts = async (req: Request, res: Response) => {
 const getRandomProducts = async (req: Request, res: Response) => {
   try {
     const products = await Product.aggregate([{ $sample: { size: 6 } }]);
-    res.status(200).send({
-      success: true,
-      message: "Products retrieved successfully",
-      data: products,
-    });
-  } catch (err) {
-    console.log(err)
-    res.status(500).send({
-      success: false,
-      message: "Failed to retrieve products",
-      data: null,
-    });
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Products retrieved successfully",
+      products,
+    );
+  } catch (error: any) {
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to get products",
+      null,
+      error.message,
+    );
   }
-}
+};
 
 const getProduct = async (req: Request, res: Response) => {
   try {
     const productId = req.params.id;
     const product = await Product.findById(productId);
     if (!product) {
-      return res.status(404).send({
-        success: false,
-        statusCode: 404,
-        message: "Product not found",
-      });
+      return sendResponse(res, 404, false, "Product not found");
     }
-
-    res.status(200).send({
-      success: true,
-      statusCode: 200,
-      message: "Product retrieved successfully",
-      data: product,
-    });
-  } catch (err) {
-    console.log(err);
-    res.status(500).send({
-      success: false,
-      statusCode: 500,
-      message: "Failed to retrieve product",
-      data: null,
-    });
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Product retrieved successfully",
+      product,
+    );
+  } catch (error: any) {
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to get product",
+      null,
+      error.message,
+    );
   }
 };
 
 const updateProduct = async (req: Request, res: Response) => {
   try {
-    const productId = req.params.id;
-    const token = req.headers.authorization as string;
-    const verifyToken: JwtPayload = verify(token, process.env.JWT_SECRET_KEY as string) as JwtPayload;
-    const userId = verifyToken?.id;
-    if (!userId) {
-      res.status(404).send({
-        success: false,
-        statusCode: 404,
-        message: "You are not authorized to update this cow",
-      });
-    }
-    const updatedData: IProduct = req.body;
-    const updatedProduct = await Product.findByIdAndUpdate(productId, updatedData, {
+    const { id } = req.params;
+    const data: Partial<IProduct> = req.body;
+    const product = await Product.findByIdAndUpdate(id, data, {
       new: true,
+      runValidators: true,
     });
-
-    res.status(200).send({
-      success: true,
-      statusCode: 200,
-      message: "Cow updated successfully",
-      data: updatedProduct,
-    });
-  } catch (err) {
-    console.log(err);
-    res.status(500).send({
-      success: false,
-      statusCode: 500,
-      message: "Failed to update cow",
-      data: null,
-    });
+    if (!product) {
+      return sendResponse(res, 404, false, "Product not found");
+    }
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Product updated successfully",
+      product,
+    );
+  } catch (error: any) {
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to update product",
+      null,
+      error.message,
+    );
   }
 };
 
 const deleteProduct = async (req: Request, res: Response) => {
   try {
-    const productId = req.params.id;
-    const token = req.headers.authorization as string;
-    const decoded: JwtPayload = verify(token, process.env.JWT_SECRET_KEY as string) as JwtPayload;
-    const userId = decoded?.id;
-    if (!userId) {
-      res.status(404).send({
-        success: false,
-        message: "You are not authorized to delete this cow",
-      });
+    const { id } = req.params;
+    const product = await Product.findByIdAndDelete(id);
+    if (!product) {
+      return sendResponse(res, 404, false, "Product not found");
     }
-    const deleteProduct = await Product.findByIdAndDelete(productId);
-
-    res.status(200).send({
-      success: true,
-      message: "Cow deleted successfully",
-      data: deleteProduct,
-    });
-  } catch (err) {
-    console.log(err);
-    res.status(500).send({
-      success: false,
-      message: "Failed to delete cow",
-      data: null,
-    });
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Product deleted successfully",
+      product,
+    );
+  } catch (error: any) {
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to delete product",
+      null,
+      error.message,
+    );
   }
 };
 

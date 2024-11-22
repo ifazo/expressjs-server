@@ -5,15 +5,14 @@ import { ROLE } from "../models/userModel";
 
 const router = Router();
 
-router.get(
-  "/profile",
-  auth(ROLE.BUYER, ROLE.SELLER),
-  userController.getProfile
-).patch("/profile", auth(ROLE.BUYER, ROLE.SELLER), userController.updateProfile);
 router
-  .get("/:id", auth(ROLE.ADMIN), userController.getUser)
-  .patch("/:id", auth(ROLE.ADMIN), userController.updateUser)
-  .delete("/:id", auth(ROLE.ADMIN), userController.deleteUser);
-router.get("/", auth(ROLE.ADMIN), userController.getUsers);
+  .route("/:id")
+  .get(auth(ROLE.ADMIN, ROLE.SUPER_ADMIN), userController.getUser)
+  .patch(auth(ROLE.ADMIN, ROLE.SUPER_ADMIN), userController.updateUser)
+  .delete(auth(ROLE.ADMIN, ROLE.SUPER_ADMIN), userController.deleteUser);
+
+router
+  .route("/")
+  .get(auth(ROLE.ADMIN, ROLE.SUPER_ADMIN), userController.getUsers);
 
 export const userRoutes = router;

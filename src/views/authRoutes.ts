@@ -1,10 +1,14 @@
 import express from "express";
-import authController  from "../controllers/authController";
+import authController from "../controllers/authController";
 
 const router = express.Router();
 
-router.post("/signup", authController.signUp);
-router.post("/signin", authController.signIn);
-router.post("/token", authController.token);
+router.post("/sign-up", authController.signUp);
+router.post("/sign-in", authController.signIn);
+router
+  .route("/profile")
+  .get(authController.getProfile)
+  .patch(authController.updateProfile)
+  .delete(authController.deleteProfile);
 
 export const authRoutes = router;

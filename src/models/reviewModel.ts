@@ -1,22 +1,25 @@
 import { ObjectId, Schema, SchemaTypes, model } from "mongoose";
 
 export interface IReview {
-    name: string;
-    rating: number;
-    comment: string;
-    productId: ObjectId;
-    createdAt?: Date;
-    updatedAt?: Date;
+  name: string;
+  rating: number;
+  review: string;
+  userId: ObjectId;
+  productId: ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const reviewSchema: Schema = new Schema<IReview>({
+const reviewSchema: Schema = new Schema<IReview>(
+  {
     name: { type: String, required: true },
     rating: { type: Number, required: true },
-    comment: { type: String, required: true },
+    review: { type: String, required: true },
+    userId: { type: SchemaTypes.ObjectId, ref: "User" },
     productId: { type: SchemaTypes.ObjectId, ref: "Product" },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
-});
+  },
+  { timestamps: true },
+);
 
 const Review = model<IReview>("Review", reviewSchema);
 

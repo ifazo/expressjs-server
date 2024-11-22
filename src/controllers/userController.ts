@@ -1,24 +1,13 @@
 import { Request, Response } from "express";
 import User from "../models/userModel";
-import { JwtPayload, verify } from "jsonwebtoken";
+import sendResponse from "../helper/sendResponse";
 
 const getUsers = async (_req: Request, res: Response) => {
   try {
     const result = await User.find();
-
-    res.status(200).send({
-      success: true,
-      statusCode: 200,
-      message: "Users retrieved successfully",
-      data: result,
-    });
+   return sendResponse(res, 200, true, "Get users successfully", result);
   } catch (error: any) {
-    res.status(500).send({
-      success: false,
-      statusCode: 500,
-      message: "Failed to retrieve users",
-      errorMessages: error.message,
-    });
+    return sendResponse(res, 500, false, "Failed to get users", null, error.message);
   }
 };
 
@@ -26,20 +15,12 @@ const getUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const result = await User.findById(id);
-
-    res.status(200).send({
-      success: true,
-      statusCode: 200,
-      message: "User retrieved successfully",
-      data: result,
-    });
+    if (!result) {
+      return sendResponse(res, 404, false, "User not found");
+    }
+    return sendResponse(res, 200, true, "Get user successfully", result);
   } catch (error: any) {
-    res.status(500).send({
-      success: false,
-      statusCode: 500,
-      message: "Failed to retrieve user",
-      errorMessages: error.message,
-    });
+    return sendResponse(res, 500, false, "Failed to get user", null, error.message);
   }
 };
 
@@ -49,26 +30,11 @@ const updateUser = async (req: Request, res: Response) => {
     const data = req.body;
     const user = await User.findByIdAndUpdate(id, data, { new: true });
     if (!user) {
-      return res.status(404).send({
-        success: false,
-        statusCode: 404,
-        message: "User not found",
-      });
+      return sendResponse(res, 404, false, "User not found");
     }
-
-    res.status(200).send({
-      success: true,
-      statusCode: 200,
-      message: "User updated successfully",
-      data: user,
-    });
+    return sendResponse(res, 200, true, "User updated successfully", user);
   } catch (error: any) {
-    res.status(500).send({
-      success: false,
-      statusCode: 500,
-      message: "Failed to update user",
-      errorMessages: error.message,
-    });
+    return sendResponse(res, 500, false, "Failed to update user", null, error.message);
   }
 };
 
@@ -77,85 +43,11 @@ const deleteUser = async (req: Request, res: Response) => {
     const { id } = req.params;
     const user = await User.findByIdAndDelete(id);
     if (!user) {
-      return res.status(404).send({
-        success: false,
-        statusCode: 404,
-        message: "User not found",
-      });
+      return sendResponse(res, 404, false, "User not found");
     }
-
-    res.status(200).send({
-      success: true,
-      statusCode: 200,
-      message: "User deleted successfully",
-      data: user,
-    });
+    return sendResponse(res, 200, true, "User deleted successfully", user);
   } catch (error: any) {
-    res.status(500).send({
-      success: false,
-      statusCode: 500,
-      message: "Failed to delete user",
-      errorMessages: error.message,
-    });
-  }
-};
-
-const getProfile = async (req: Request, res: Response) => {
-  try {
-    const token = req.headers.authorization as string;
-    const decodedToken = verify(token, process.env.JWT_SECRET_KEY as string) as JwtPayload;
-    const userId = decodedToken?.id;
-    const profile = await User.findById(userId);
-    if (!profile) {
-      return res.status(404).send({
-        success: false,
-        statusCode: 404,
-        message: "Profile not found",
-      });
-    }
-    res.status(200).send({
-      success: true,
-      statusCode: 200,
-      message: "Profile retrieved successfully",
-      data: profile,
-    });
-  } catch (error: any) {
-    res.status(500).send({
-      success: false,
-      statusCode: 500,
-      message: "Failed to get profile",
-      errorMessages: error.message,
-    });
-  }
-};
-
-const updateProfile = async (req: Request, res: Response) => {
-  try {
-    const data = req.body;
-    const token = req.headers.authorization as string;
-    const decodedToken = verify(token, process.env.JWT_SECRET_KEY as string) as JwtPayload;
-    const userId = decodedToken?.id;
-    const profile = await User.findByIdAndUpdate(userId, data, { new: true });
-    if (!profile) {
-      return res.status(404).send({
-        success: false,
-        statusCode: 404,
-        message: "Profile not found",
-      });
-    }
-    return res.status(200).send({
-      success: true,
-      statusCode: 200,
-      message: "Profile updated successfully",
-      data: profile,
-    });
-  } catch (error: any) {
-    res.status(500).send({
-      success: false,
-      statusCode: 500,
-      message: "Failed to get profile",
-      errorMessages: error.message,
-    });
+    return sendResponse(res, 500, false, "Failed to delete user", null, error.message);
   }
 };
 
@@ -164,8 +56,6 @@ const userController = {
   getUser,
   updateUser,
   deleteUser,
-  getProfile,
-  updateProfile,
 };
 
 export default userController;

@@ -27,23 +27,17 @@ Test the server by clicking the [link](https://www.postman.com/ifaz-team/workspa
 
 1. Clone the repository:
 
-
 2. Navigate to the project directory:
-
 
 3. Install dependencies:
 
-
 4. Create a `.env` file in the root directory and configure environment variables:
 
-
 5. Start the server:
-
 
 ## Development
 
 - Run the server in development mode with hot reloading:
-
 
 ## License
 
