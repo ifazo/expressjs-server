@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 dotenv.config()
 
 const uri = process.env.MONGODB_URI as string;
+const port = 5000
 
 const clientOptions = {
   serverApi: { version: "1", strict: true, deprecationErrors: true },
@@ -14,8 +15,8 @@ async function run() {
   try {
     await connect(uri, clientOptions);
     
-    app.listen(process.env.PORT, () => {
-      console.log(`Server is running on port ${process.env.PORT}`);
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
     });
   } catch (error) {
     console.log(error);
