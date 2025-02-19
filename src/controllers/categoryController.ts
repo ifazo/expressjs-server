@@ -32,7 +32,13 @@ const getCategories = async (req: Request, res: Response) => {
   try {
     const cachedCategories = await redis.get("categories");
     if (cachedCategories) {
-      return sendResponse(res, 200, true, "Categories retrieved successfully", JSON.parse(cachedCategories));
+      return sendResponse(
+        res,
+        200,
+        true,
+        "Categories retrieved successfully",
+        JSON.parse(cachedCategories),
+      );
     }
     const categories = await Category.find();
     await redis.set("categories", JSON.stringify(categories));
@@ -60,7 +66,13 @@ const getProductsByCategory = async (req: Request, res: Response) => {
     const { id } = req.params;
     const cachedCategory = await redis.get(`category:${id}`);
     if (cachedCategory) {
-      return sendResponse(res, 200, true, "Category products retrieved successfully", JSON.parse(cachedCategory));
+      return sendResponse(
+        res,
+        200,
+        true,
+        "Category products retrieved successfully",
+        JSON.parse(cachedCategory),
+      );
     }
     const category = await Product.find({ categoryId: id });
     if (!category) {
@@ -90,7 +102,10 @@ const updateCategory = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = req.body;
-    const category = await Category.findByIdAndUpdate(id, data, { new : true, runValidators: true });
+    const category = await Category.findByIdAndUpdate(id, data, {
+      new: true,
+      runValidators: true,
+    });
     if (!category) {
       return sendResponse(res, 404, false, "Category not found");
     }

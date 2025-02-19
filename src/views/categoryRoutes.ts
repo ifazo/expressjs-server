@@ -14,6 +14,9 @@ router
   .route("/:id")
   .get(categoryController.getProductsByCategory)
   .patch(auth(ROLE.ADMIN, ROLE.SUPER_ADMIN), categoryController.updateCategory)
-  .delete(auth(ROLE.ADMIN, ROLE.SUPER_ADMIN), categoryController.deleteCategory);
+  .delete(
+    auth(ROLE.ADMIN, ROLE.SUPER_ADMIN),
+    categoryController.deleteCategory,
+  );
 
 export const categoryRoutes = router;

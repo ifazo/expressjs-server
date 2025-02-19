@@ -31,7 +31,13 @@ const getProducts = async (req: Request, res: Response) => {
   try {
     const cachedProducts = await redis.get("products");
     if (cachedProducts) {
-      return sendResponse(res, 200, true, "Products retrieved successfully", JSON.parse(cachedProducts));
+      return sendResponse(
+        res,
+        200,
+        true,
+        "Products retrieved successfully",
+        JSON.parse(cachedProducts),
+      );
     }
     const q = req.query.q as string;
     const category = req.query.category as string;
@@ -113,7 +119,13 @@ const getProduct = async (req: Request, res: Response) => {
     const productId = req.params.id;
     const cachedProduct = await redis.get(`product:${productId}`);
     if (cachedProduct) {
-      return sendResponse(res, 200, true, "Product retrieved successfully", JSON.parse(cachedProduct));
+      return sendResponse(
+        res,
+        200,
+        true,
+        "Product retrieved successfully",
+        JSON.parse(cachedProduct),
+      );
     }
     const product = await Product.findById(productId);
     if (!product) {

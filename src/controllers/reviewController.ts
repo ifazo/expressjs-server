@@ -30,7 +30,13 @@ const getProductReviews = async (req: Request, res: Response) => {
     }
     const cachedReviews = await redis.get(`reviews:${id}`);
     if (cachedReviews) {
-      return sendResponse(res, 200, true, "Reviews retrieved successfully", JSON.parse(cachedReviews));
+      return sendResponse(
+        res,
+        200,
+        true,
+        "Reviews retrieved successfully",
+        JSON.parse(cachedReviews),
+      );
     }
     const reviews = await Review.find({ productId: id });
     await redis.set(`reviews:${id}`, JSON.stringify(reviews));
@@ -55,7 +61,7 @@ const getProductReviews = async (req: Request, res: Response) => {
 
 const updateReview = async (req: Request, res: Response) => {
   try {
-    const {id} = req.params;
+    const { id } = req.params;
     const data = req.body;
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -71,9 +77,14 @@ const updateReview = async (req: Request, res: Response) => {
     }
 
     if (review.userId.toString() !== userId) {
-      return sendResponse(res, 403, false, "Only the owner can edit this review");
+      return sendResponse(
+        res,
+        403,
+        false,
+        "Only the owner can edit this review",
+      );
     }
-    const updatedReview  = await Review.findByIdAndUpdate(id, data, {
+    const updatedReview = await Review.findByIdAndUpdate(id, data, {
       new: true,
     });
     await redis.del(`reviews:${review.productId}`);
@@ -82,16 +93,23 @@ const updateReview = async (req: Request, res: Response) => {
       200,
       true,
       "Review updated successfully",
-      updatedReview ,
+      updatedReview,
     );
   } catch (error) {
-    return sendResponse(res, 500, false, "Failed to update review", null, error);
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to update review",
+      null,
+      error,
+    );
   }
 };
 
 const deleteReview = async (req: Request, res: Response) => {
   try {
-    const {id} = req.params;
+    const { id } = req.params;
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return sendResponse(res, 401, false, "You are unauthorized");
@@ -106,15 +124,33 @@ const deleteReview = async (req: Request, res: Response) => {
     }
 
     if (review.userId.toString() !== userId) {
-      return sendResponse(res, 403, false, "Only the owner can edit this review");
+      return sendResponse(
+        res,
+        403,
+        false,
+        "Only the owner can edit this review",
+      );
     }
     const deletedReview = await Review.findByIdAndDelete(id);
     await redis.del(`reviews:${review.productId}`);
-    return sendResponse(res, 200, true, "Review deleted successfully", deletedReview);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Review deleted successfully",
+      deletedReview,
+    );
   } catch (error) {
-    return sendResponse(res, 500, false, "Failed to delete review", null, error);
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to delete review",
+      null,
+      error,
+    );
   }
-}
+};
 
 const reviewController = {
   createReview,
