@@ -19,7 +19,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/reviews", reviewRoutes);
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Welcome to express mongoose server!");
+  res.send("Welcome to Expressjs Server!");
 });
 
 app.get("/api", (req: Request, res: Response) => {

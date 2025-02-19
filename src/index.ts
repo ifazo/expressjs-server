@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config()
 
 const uri = process.env.MONGODB_URI as string;
-const port = 5000
+const port = 3000
 
 const clientOptions = {
   serverApi: { version: "1", strict: true, deprecationErrors: true },
@@ -16,7 +16,7 @@ async function run() {
     await connect(uri, clientOptions);
     
     app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
+      console.log(`Expressjs Server is running on port ${port}`);
     });
   } catch (error) {
     console.log(error);
