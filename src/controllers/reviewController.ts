@@ -2,11 +2,13 @@ import { Request, Response } from "express";
 import Review, { IReview } from "../models/reviewModel";
 import sendResponse from "../helper/sendResponse";
 import jwt, { JwtPayload, Secret } from "jsonwebtoken";
+import { redis } from "..";
 
 const createReview = async (req: Request, res: Response) => {
   try {
     const data: IReview = req.body;
     const review = await Review.create(data);
+    await redis.del(`reviews:${data.productId}`);
     return sendResponse(res, 201, true, "Review created successfully", review);
   } catch (error: any) {
     return sendResponse(
@@ -26,7 +28,12 @@ const getProductReviews = async (req: Request, res: Response) => {
     if (!id) {
       return sendResponse(res, 400, false, "Product ID is required");
     }
+    const cachedReviews = await redis.get(`reviews:${id}`);
+    if (cachedReviews) {
+      return sendResponse(res, 200, true, "Reviews retrieved successfully", JSON.parse(cachedReviews));
+    }
     const reviews = await Review.find({ productId: id });
+    await redis.set(`reviews:${id}`, JSON.stringify(reviews));
     return sendResponse(
       res,
       200,
@@ -69,6 +76,7 @@ const updateReview = async (req: Request, res: Response) => {
     const updatedReview  = await Review.findByIdAndUpdate(id, data, {
       new: true,
     });
+    await redis.del(`reviews:${review.productId}`);
     return sendResponse(
       res,
       200,
@@ -101,6 +109,7 @@ const deleteReview = async (req: Request, res: Response) => {
       return sendResponse(res, 403, false, "Only the owner can edit this review");
     }
     const deletedReview = await Review.findByIdAndDelete(id);
+    await redis.del(`reviews:${review.productId}`);
     return sendResponse(res, 200, true, "Review deleted successfully", deletedReview);
   } catch (error) {
     return sendResponse(res, 500, false, "Failed to delete review", null, error);

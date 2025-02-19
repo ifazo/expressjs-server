@@ -5,6 +5,7 @@ import { userRoutes } from "./views/userRoutes";
 import { productRoutes } from "./views/productRoutes";
 import { categoryRoutes } from "./views/categoryRoutes";
 import { reviewRoutes } from "./views/reviewRoutes";
+import { redis } from ".";
 
 export const app: Application = express();
 
@@ -24,4 +25,13 @@ app.get("/", (req: Request, res: Response) => {
 
 app.get("/api", (req: Request, res: Response) => {
   res.send("Server api is running successfully!");
+});
+
+app.get("/redis", async (_req, res) => {
+  await redis.set("key", "Hello from Redis");
+  const value = await redis.get("key");
+  res.json({
+    message: "Redis test",
+    value,
+  });
 });

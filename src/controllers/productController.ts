@@ -1,11 +1,13 @@
 import { Request, Response } from "express";
 import Product, { IProduct } from "../models/productModel";
 import sendResponse from "../helper/sendResponse";
+import { redis } from "..";
 
 const createProduct = async (req: Request, res: Response) => {
   try {
     const data: IProduct = req.body;
     const product = await Product.create(data);
+    await redis.del("products");
     return sendResponse(
       res,
       201,
@@ -27,6 +29,10 @@ const createProduct = async (req: Request, res: Response) => {
 
 const getProducts = async (req: Request, res: Response) => {
   try {
+    const cachedProducts = await redis.get("products");
+    if (cachedProducts) {
+      return sendResponse(res, 200, true, "Products retrieved successfully", JSON.parse(cachedProducts));
+    }
     const q = req.query.q as string;
     const category = req.query.category as string;
     const price = req.query.price as string;
@@ -35,70 +41,41 @@ const getProducts = async (req: Request, res: Response) => {
     const skip = parseInt(req.query.skip as string) || 0;
     const limit = parseInt(req.query.limit as string) || 10;
 
+    let products;
     if (q) {
-      const products = await Product.find({
+      products = await Product.find({
         $or: [
           { name: { $regex: q, $options: "i" } },
           { description: { $regex: q, $options: "i" } },
           { features: { $regex: q, $options: "i" } },
         ],
       });
-      return res.status(200).send({
-        success: true,
-        message: "Products retrieved successfully",
-        data: products,
-      });
     } else if (category) {
-      const products = await Product.find({ category: category });
-      return res.status(200).send({
-        success: true,
-        message: "Products retrieved successfully",
-        data: products,
-      });
+      products = await Product.find({ category: category });
     } else if (price) {
-      const products = await Product.find({ price: { $lt: price } });
-      return res.status(200).send({
-        success: true,
-        message: "Products retrieved successfully",
-        data: products,
-      });
+      products = await Product.find({ price: { $lt: price } });
     } else if (rating) {
-      const products = await Product.find({ rating: { $gt: rating } });
-      return res.status(200).send({
-        success: true,
-        message: "Products retrieved successfully",
-        data: products,
-      });
+      products = await Product.find({ rating: { $gt: rating } });
     } else if (sort) {
       let sortQuery = {};
-
       if (sort === "price" || sort === "name" || sort === "rating") {
         sortQuery = { [sort]: 1 };
       } else {
         sortQuery = { createdAt: -1 };
       }
-
-      const products = await Product.find().sort(sortQuery);
-      return res.status(200).send({
-        success: true,
-        message: "Products retrieved successfully",
-        data: products,
-      });
+      products = await Product.find().sort(sortQuery);
     } else if (skip && limit) {
-      const products = await Product.find().skip(skip).limit(limit);
-      return res.status(200).send({
-        success: true,
-        message: "Products retrieved successfully",
-        data: products,
-      });
+      products = await Product.find().skip(skip).limit(limit);
     } else {
-      const products = await Product.find();
-      return res.status(200).send({
-        success: true,
-        message: "Products retrieved successfully",
-        data: products,
-      });
+      products = await Product.find();
     }
+
+    await redis.set("products", JSON.stringify(products));
+    return res.status(200).send({
+      success: true,
+      message: "Products retrieved successfully",
+      data: products,
+    });
   } catch (err) {
     console.log(err);
     res.status(500).send({
@@ -134,10 +111,15 @@ const getRandomProducts = async (req: Request, res: Response) => {
 const getProduct = async (req: Request, res: Response) => {
   try {
     const productId = req.params.id;
+    const cachedProduct = await redis.get(`product:${productId}`);
+    if (cachedProduct) {
+      return sendResponse(res, 200, true, "Product retrieved successfully", JSON.parse(cachedProduct));
+    }
     const product = await Product.findById(productId);
     if (!product) {
       return sendResponse(res, 404, false, "Product not found");
     }
+    await redis.set(`product:${productId}`, JSON.stringify(product));
     return sendResponse(
       res,
       200,
@@ -168,6 +150,8 @@ const updateProduct = async (req: Request, res: Response) => {
     if (!product) {
       return sendResponse(res, 404, false, "Product not found");
     }
+    await redis.del("products");
+    await redis.del(`product:${id}`);
     return sendResponse(
       res,
       200,
@@ -194,6 +178,8 @@ const deleteProduct = async (req: Request, res: Response) => {
     if (!product) {
       return sendResponse(res, 404, false, "Product not found");
     }
+    await redis.del(`product:${id}`);
+    await redis.del("products");
     return sendResponse(
       res,
       200,
