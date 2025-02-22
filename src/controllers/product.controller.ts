@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import Product, { IProduct } from "../models/productModel";
-import sendResponse from "../helper/sendResponse";
+import Product, { IProduct } from "../models/product.model";
 import { redis } from "..";
+import sendResponse from "../middleware/sendResponse";
 
 const createProduct = async (req: Request, res: Response) => {
   try {
@@ -15,15 +15,8 @@ const createProduct = async (req: Request, res: Response) => {
       "Product created successfully",
       product,
     );
-  } catch (error: any) {
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to create product",
-      null,
-      error.message,
-    );
+  } catch (error) {
+    return sendResponse(res, 500, false, error);
   }
 };
 
@@ -77,18 +70,15 @@ const getProducts = async (req: Request, res: Response) => {
     }
 
     await redis.set("products", JSON.stringify(products));
-    return res.status(200).send({
-      success: true,
-      message: "Products retrieved successfully",
-      data: products,
-    });
-  } catch (err) {
-    console.log(err);
-    res.status(500).send({
-      success: false,
-      message: err,
-      data: null,
-    });
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Products retrieved successfully",
+      products,
+    );
+  } catch (error) {
+    return sendResponse(res, 500, false, error);
   }
 };
 
@@ -102,15 +92,8 @@ const getRandomProducts = async (req: Request, res: Response) => {
       "Products retrieved successfully",
       products,
     );
-  } catch (error: any) {
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to get products",
-      null,
-      error.message,
-    );
+  } catch (error) {
+    return sendResponse(res, 500, false, error);
   }
 };
 
@@ -139,15 +122,8 @@ const getProduct = async (req: Request, res: Response) => {
       "Product retrieved successfully",
       product,
     );
-  } catch (error: any) {
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to get product",
-      null,
-      error.message,
-    );
+  } catch (error) {
+    return sendResponse(res, 500, false, error);
   }
 };
 
@@ -171,15 +147,8 @@ const updateProduct = async (req: Request, res: Response) => {
       "Product updated successfully",
       product,
     );
-  } catch (error: any) {
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to update product",
-      null,
-      error.message,
-    );
+  } catch (error) {
+    return sendResponse(res, 500, false, error);
   }
 };
 
@@ -199,15 +168,8 @@ const deleteProduct = async (req: Request, res: Response) => {
       "Product deleted successfully",
       product,
     );
-  } catch (error: any) {
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to delete product",
-      null,
-      error.message,
-    );
+  } catch (error) {
+    return sendResponse(res, 500, false, error);
   }
 };
 

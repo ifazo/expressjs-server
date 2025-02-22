@@ -1,7 +1,7 @@
 import { Router } from "express";
-import productController from "../controllers/productController";
+import productController from "../controllers/product.controller";
 import auth from "../middleware/auth";
-import { ROLE } from "../models/userModel";
+import { ROLE } from "../models/user.model";
 
 const router = Router();
 

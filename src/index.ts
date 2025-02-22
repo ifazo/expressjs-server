@@ -5,7 +5,7 @@ import { createClient } from "redis";
 
 dotenv.config();
 
-const port = 3000;
+const port = 8000;
 
 const redisHost = process.env.REDIS_HOST || "localhost";
 const redisPort = parseInt(process.env.REDIS_PORT || "6379");
@@ -36,9 +36,8 @@ const clientOptions = {
 async function run() {
   try {
     await connect(uri, clientOptions);
-
     app.listen(port, () => {
-      console.log(`Expressjs Server is running on port ${port}`);
+      console.log(`express.js server running at: http://localhost:${port}`);
     });
   } catch (error) {
     console.log(error);

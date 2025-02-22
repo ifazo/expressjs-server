@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import Review, { IReview } from "../models/reviewModel";
-import sendResponse from "../helper/sendResponse";
-import jwt, { JwtPayload, Secret } from "jsonwebtoken";
+import Review, { IReview } from "../models/review.model";
 import { redis } from "..";
+import sendResponse from "../middleware/sendResponse";
+import verifyToken from "../middleware/verifyToken";
 
 const createReview = async (req: Request, res: Response) => {
   try {
@@ -10,15 +10,8 @@ const createReview = async (req: Request, res: Response) => {
     const review = await Review.create(data);
     await redis.del(`reviews:${data.productId}`);
     return sendResponse(res, 201, true, "Review created successfully", review);
-  } catch (error: any) {
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to create review",
-      null,
-      error.message,
-    );
+  } catch (error) {
+    return sendResponse(res, 500, false, error);
   }
 };
 
@@ -47,15 +40,8 @@ const getProductReviews = async (req: Request, res: Response) => {
       "Reviews retrieved successfully",
       reviews,
     );
-  } catch (error: any) {
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to get reviews",
-      null,
-      error.message,
-    );
+  } catch (error) {
+    return sendResponse(res, 500, false, error);
   }
 };
 
@@ -67,9 +53,7 @@ const updateReview = async (req: Request, res: Response) => {
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return sendResponse(res, 401, false, "You are unauthorized");
     }
-    const token = authHeader.split(" ")[1];
-    const secret = process.env.JWT_SECRET_KEY as Secret;
-    const decodedToken = jwt.verify(token, secret) as JwtPayload;
+    const decodedToken = verifyToken(authHeader);
     const userId = decodedToken?.id;
     const review = await Review.findById(id);
     if (!review) {
@@ -96,14 +80,7 @@ const updateReview = async (req: Request, res: Response) => {
       updatedReview,
     );
   } catch (error) {
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to update review",
-      null,
-      error,
-    );
+    return sendResponse(res, 500, false, error);
   }
 };
 
@@ -114,9 +91,7 @@ const deleteReview = async (req: Request, res: Response) => {
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return sendResponse(res, 401, false, "You are unauthorized");
     }
-    const token = authHeader.split(" ")[1];
-    const secret = process.env.JWT_SECRET_KEY as Secret;
-    const decodedToken = jwt.verify(token, secret) as JwtPayload;
+    const decodedToken = verifyToken(authHeader);
     const userId = decodedToken?.id;
     const review = await Review.findById(id);
     if (!review) {
@@ -141,14 +116,7 @@ const deleteReview = async (req: Request, res: Response) => {
       deletedReview,
     );
   } catch (error) {
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to delete review",
-      null,
-      error,
-    );
+    return sendResponse(res, 500, false, error);
   }
 };
 

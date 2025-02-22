@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import Category from "../models/categoryModel";
-import Product from "../models/productModel";
-import sendResponse from "../helper/sendResponse";
+import Category from "../models/category.model";
+import Product from "../models/product.model";
 import { redis } from "..";
+import sendResponse from "../middleware/sendResponse";
 
 const postCategory = async (req: Request, res: Response) => {
   try {
@@ -16,15 +16,8 @@ const postCategory = async (req: Request, res: Response) => {
       "Category created successfully",
       category,
     );
-  } catch (error: any) {
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to create category",
-      null,
-      error.message,
-    );
+  } catch (error) {
+    return sendResponse(res, 500, false, error);
   }
 };
 
@@ -49,15 +42,8 @@ const getCategories = async (req: Request, res: Response) => {
       "Categories retrieved successfully",
       categories,
     );
-  } catch (error: any) {
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to get categories",
-      null,
-      error.message,
-    );
+  } catch (error) {
+    return sendResponse(res, 500, false, error);
   }
 };
 
@@ -86,15 +72,8 @@ const getProductsByCategory = async (req: Request, res: Response) => {
       "Category products retrieved successfully",
       category,
     );
-  } catch (error: any) {
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to get products",
-      null,
-      error.message,
-    );
+  } catch (error) {
+    return sendResponse(res, 500, false, error);
   }
 };
 
@@ -118,15 +97,8 @@ const updateCategory = async (req: Request, res: Response) => {
       "Category updated successfully",
       category,
     );
-  } catch (error: any) {
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to update category",
-      null,
-      error.message,
-    );
+  } catch (error) {
+    return sendResponse(res, 500, false, error);
   }
 };
 
@@ -146,15 +118,8 @@ const deleteCategory = async (req: Request, res: Response) => {
       "Category deleted successfully",
       category,
     );
-  } catch (error: any) {
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to delete category",
-      null,
-      error.message,
-    );
+  } catch (error) {
+    return sendResponse(res, 500, false, error);
   }
 };
 

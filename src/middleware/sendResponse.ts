@@ -1,16 +1,17 @@
+import { Response } from "express";
+
 const sendResponse = (
-  res: any,
+  res: Response,
   statusCode: number,
   success: boolean,
-  message: string,
-  data: any = null,
-  errorMessages: any = null,
+  message: any,
+  data?: any,
 ) => {
-  res.status(statusCode).send({
+  return res.status(statusCode).send({
+    statusCode,
     success,
     message,
     data,
-    errorMessages,
   });
 };
 

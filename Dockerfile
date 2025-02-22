@@ -23,7 +23,7 @@ RUN npm run build
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Expose the application and Redis ports
-EXPOSE 3000 6379
+EXPOSE 8000 6379
 
 # Set the command to run Supervisor
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

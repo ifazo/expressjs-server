@@ -1,10 +1,10 @@
 import express, { Application, Request, Response } from "express";
 import cors from "cors";
-import { authRoutes } from "./views/authRoutes";
-import { userRoutes } from "./views/userRoutes";
-import { productRoutes } from "./views/productRoutes";
-import { categoryRoutes } from "./views/categoryRoutes";
-import { reviewRoutes } from "./views/reviewRoutes";
+import { authRoutes } from "./routes/auth.routes";
+import { userRoutes } from "./routes/user.routes";
+import { productRoutes } from "./routes/product.routes";
+import { categoryRoutes } from "./routes/category.routes";
+import { reviewRoutes } from "./routes/review.routes";
 import { redis } from ".";
 
 export const app: Application = express();
