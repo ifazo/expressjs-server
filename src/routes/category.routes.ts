@@ -13,13 +13,7 @@ router
 router
   .route("/:id")
   .get(categoryController.getCategoryById)
-  .patch(
-    auth(USER_ROLE.ADMIN),
-    categoryController.updateCategoryById,
-  )
-  .delete(
-    auth(USER_ROLE.ADMIN),
-    categoryController.deleteCategoryById,
-  );
+  .patch(auth(USER_ROLE.ADMIN), categoryController.updateCategoryById)
+  .delete(auth(USER_ROLE.ADMIN), categoryController.deleteCategoryById);
 
 export const categoryRoutes = router;

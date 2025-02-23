@@ -52,11 +52,17 @@ const getReviewById = async (req: Request, res: Response) => {
     if (!review) {
       return sendResponse(res, 404, false, "Review not found");
     }
-    return sendResponse(res, 200, true, "Review retrieved successfully", review);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Review retrieved successfully",
+      review,
+    );
   } catch (error) {
     return sendResponse(res, 500, false, error);
   }
-}
+};
 
 const updateReviewById = async (req: Request, res: Response) => {
   try {

@@ -50,7 +50,7 @@ const signInUser = async (req: Request, res: Response) => {
 
 const authController = {
   signUpUser,
-  signInUser
+  signInUser,
 };
 
 export default authController;

@@ -12,7 +12,13 @@ export interface IReview {
 
 const reviewSchema: Schema = new Schema<IReview>(
   {
-    rating: { type: Number, required: true, min: 1, max: 5, get: (v: number) => parseFloat(v.toFixed(2)) },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+      get: (v: number) => parseFloat(v.toFixed(2)),
+    },
     review: { type: String, required: true },
     userId: { type: SchemaTypes.ObjectId, ref: "User" },
     productId: { type: SchemaTypes.ObjectId, ref: "Product" },
