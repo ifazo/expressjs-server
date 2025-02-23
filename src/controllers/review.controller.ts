@@ -15,7 +15,7 @@ const createReview = async (req: Request, res: Response) => {
   }
 };
 
-const getProductReviews = async (req: Request, res: Response) => {
+const getReviews = async (req: Request, res: Response) => {
   try {
     const id = req.query.productId as string;
     if (!id) {
@@ -45,7 +45,20 @@ const getProductReviews = async (req: Request, res: Response) => {
   }
 };
 
-const updateReview = async (req: Request, res: Response) => {
+const getReviewById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const review = await Review.findById(id);
+    if (!review) {
+      return sendResponse(res, 404, false, "Review not found");
+    }
+    return sendResponse(res, 200, true, "Review retrieved successfully", review);
+  } catch (error) {
+    return sendResponse(res, 500, false, error);
+  }
+}
+
+const updateReviewById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = req.body;
@@ -84,7 +97,7 @@ const updateReview = async (req: Request, res: Response) => {
   }
 };
 
-const deleteReview = async (req: Request, res: Response) => {
+const deleteReviewById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const authHeader = req.headers.authorization;
@@ -122,9 +135,10 @@ const deleteReview = async (req: Request, res: Response) => {
 
 const reviewController = {
   createReview,
-  getProductReviews,
-  updateReview,
-  deleteReview,
+  getReviews,
+  getReviewById,
+  updateReviewById,
+  deleteReviewById,
 };
 
 export default reviewController;

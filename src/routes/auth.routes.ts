@@ -3,12 +3,7 @@ import authController from "../controllers/auth.controller";
 
 const router = express.Router();
 
-router.post("/sign-up", authController.signUp);
-router.post("/sign-in", authController.signIn);
-router
-  .route("/profile")
-  .get(authController.getProfile)
-  .patch(authController.updateProfile)
-  .delete(authController.deleteProfile);
+router.post("/sign-up", authController.signUpUser);
+router.post("/sign-in", authController.signInUser);
 
 export const authRoutes = router;

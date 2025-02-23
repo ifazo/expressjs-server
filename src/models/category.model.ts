@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 
-interface ICategory {
+export interface ICategory {
   name: string;
   image?: string;
   description: string;
@@ -18,4 +18,5 @@ const categorySchema = new Schema<ICategory>(
 );
 
 const Category = model<ICategory>("Category", categorySchema);
+
 export default Category;

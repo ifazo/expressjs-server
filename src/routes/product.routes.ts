@@ -1,21 +1,21 @@
 import { Router } from "express";
 import productController from "../controllers/product.controller";
 import auth from "../middleware/auth";
-import { ROLE } from "../models/user.model";
+import { USER_ROLE } from "../models/user.model";
 
 const router = Router();
 
 router
   .route("/")
-  .post(auth(ROLE.ADMIN, ROLE.SUPER_ADMIN), productController.createProduct)
-  .get(productController.getProducts);
+  .post(auth(USER_ROLE.SELLER), productController.createProduct)
+  .get(productController.getProductByIds);
 
 router.get("/random", productController.getRandomProducts);
 
 router
   .route("/:id")
-  .get(productController.getProduct)
-  .patch(auth(ROLE.ADMIN, ROLE.SUPER_ADMIN), productController.updateProduct)
-  .delete(auth(ROLE.ADMIN, ROLE.SUPER_ADMIN), productController.deleteProduct);
+  .get(productController.getProductById)
+  .patch(auth(USER_ROLE.SELLER), productController.updateProductById)
+  .delete(auth(USER_ROLE.SELLER), productController.deleteProductById);
 
 export const productRoutes = router;

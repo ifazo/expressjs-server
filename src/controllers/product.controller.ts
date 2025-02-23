@@ -20,7 +20,7 @@ const createProduct = async (req: Request, res: Response) => {
   }
 };
 
-const getProducts = async (req: Request, res: Response) => {
+const getProductByIds = async (req: Request, res: Response) => {
   try {
     const cachedProducts = await redis.get("products");
     if (cachedProducts) {
@@ -37,8 +37,8 @@ const getProducts = async (req: Request, res: Response) => {
     const price = req.query.price as string;
     const rating = req.query.rating as string;
     const sort = req.query.sort as string;
-    const skip = parseInt(req.query.skip as string) || 0;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = parseInt(req.query.skip as string);
+    const limit = parseInt(req.query.limit as string);
 
     let products;
     if (q) {
@@ -46,7 +46,6 @@ const getProducts = async (req: Request, res: Response) => {
         $or: [
           { name: { $regex: q, $options: "i" } },
           { description: { $regex: q, $options: "i" } },
-          { features: { $regex: q, $options: "i" } },
         ],
       });
     } else if (category) {
@@ -97,10 +96,10 @@ const getRandomProducts = async (req: Request, res: Response) => {
   }
 };
 
-const getProduct = async (req: Request, res: Response) => {
+const getProductById = async (req: Request, res: Response) => {
   try {
-    const productId = req.params.id;
-    const cachedProduct = await redis.get(`product:${productId}`);
+    const { id } = req.params;
+    const cachedProduct = await redis.get(`product:${id}`);
     if (cachedProduct) {
       return sendResponse(
         res,
@@ -110,11 +109,11 @@ const getProduct = async (req: Request, res: Response) => {
         JSON.parse(cachedProduct),
       );
     }
-    const product = await Product.findById(productId);
+    const product = await Product.findById(id);
     if (!product) {
       return sendResponse(res, 404, false, "Product not found");
     }
-    await redis.set(`product:${productId}`, JSON.stringify(product));
+    await redis.set(`product:${id}`, JSON.stringify(product));
     return sendResponse(
       res,
       200,
@@ -127,7 +126,7 @@ const getProduct = async (req: Request, res: Response) => {
   }
 };
 
-const updateProduct = async (req: Request, res: Response) => {
+const updateProductById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data: Partial<IProduct> = req.body;
@@ -152,7 +151,7 @@ const updateProduct = async (req: Request, res: Response) => {
   }
 };
 
-const deleteProduct = async (req: Request, res: Response) => {
+const deleteProductById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const product = await Product.findByIdAndDelete(id);
@@ -175,11 +174,11 @@ const deleteProduct = async (req: Request, res: Response) => {
 
 const productController = {
   createProduct,
-  getProducts,
+  getProductByIds,
   getRandomProducts,
-  getProduct,
-  updateProduct,
-  deleteProduct,
+  getProductById,
+  updateProductById,
+  deleteProductById,
 };
 
 export default productController;

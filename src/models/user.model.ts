@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 
-interface IUser {
+export interface IUser {
   name: string;
   image?: string;
   email: string;
@@ -10,10 +10,10 @@ interface IUser {
   updatedAt?: Date;
 }
 
-export enum ROLE {
-  USER = "user",
+export enum USER_ROLE {
+  BUYER = "buyer",
+  SELLER = "seller",
   ADMIN = "admin",
-  SUPER_ADMIN = "super_admin",
 }
 
 const UserSchema: Schema = new Schema<IUser>(
@@ -22,10 +22,11 @@ const UserSchema: Schema = new Schema<IUser>(
     image: { type: String },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ROLE, default: ROLE.USER },
+    role: { type: String, enum: USER_ROLE, default: USER_ROLE.BUYER },
   },
   { timestamps: true },
 );
 
 const User = model<IUser>("User", UserSchema);
+
 export default User;

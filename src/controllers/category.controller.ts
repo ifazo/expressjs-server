@@ -47,7 +47,7 @@ const getCategories = async (req: Request, res: Response) => {
   }
 };
 
-const getProductsByCategory = async (req: Request, res: Response) => {
+const getCategoryById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const cachedCategory = await redis.get(`category:${id}`);
@@ -56,11 +56,11 @@ const getProductsByCategory = async (req: Request, res: Response) => {
         res,
         200,
         true,
-        "Category products retrieved successfully",
+        "Category retrieved successfully",
         JSON.parse(cachedCategory),
       );
     }
-    const category = await Product.find({ categoryId: id });
+    const category = await Category.findById(id);
     if (!category) {
       return sendResponse(res, 404, false, "Category not found");
     }
@@ -77,7 +77,7 @@ const getProductsByCategory = async (req: Request, res: Response) => {
   }
 };
 
-const updateCategory = async (req: Request, res: Response) => {
+const updateCategoryById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const data = req.body;
@@ -102,7 +102,7 @@ const updateCategory = async (req: Request, res: Response) => {
   }
 };
 
-const deleteCategory = async (req: Request, res: Response) => {
+const deleteCategoryById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const category = await Category.findByIdAndDelete(id);
@@ -126,9 +126,9 @@ const deleteCategory = async (req: Request, res: Response) => {
 const categoryController = {
   postCategory,
   getCategories,
-  getProductsByCategory,
-  updateCategory,
-  deleteCategory,
+  getCategoryById,
+  updateCategoryById,
+  deleteCategoryById,
 };
 
 export default categoryController;

@@ -1,28 +1,27 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import User from "../models/user.model";
+import User, { IUser } from "../models/user.model";
 import { JwtPayload, Secret, sign } from "jsonwebtoken";
 import sendResponse from "../middleware/sendResponse";
-import verifyToken from "../middleware/verifyToken";
 
-const signUp = async (req: Request, res: Response) => {
+const signUpUser = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-    const existingUser = await User.findOne({ email });
+    const data: IUser = req.body;
+    const existingUser = await User.findOne({ email: data.email });
     if (existingUser) {
       return sendResponse(res, 400, false, "User already exists");
     }
     const saltRounds = 13;
-    const hashedPassword = await bcrypt.hash(password, Number(saltRounds));
-    const data = { ...req.body, email, password: hashedPassword };
-    const result = await User.create(data);
-    return sendResponse(res, 201, true, "User created successfully", result);
+    const hashedPassword = await bcrypt.hash(data.password, Number(saltRounds));
+    const result = { ...data, password: hashedPassword };
+    const user = await User.create(result);
+    return sendResponse(res, 201, true, "User created successfully", user);
   } catch (error) {
     return sendResponse(res, 500, false, error);
   }
 };
 
-const signIn = async (req: Request, res: Response) => {
+const signInUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -49,94 +48,9 @@ const signIn = async (req: Request, res: Response) => {
   }
 };
 
-const getProfile = async (req: Request, res: Response) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return sendResponse(
-        res,
-        401,
-        false,
-        "Authorization token is missing or invalid",
-      );
-    }
-    const decodedToken = verifyToken(authHeader);
-    const userId = decodedToken?.id;
-    const profile = await User.findById(userId);
-    if (!profile) {
-      return sendResponse(res, 404, false, "Profile not found");
-    }
-    return sendResponse(res, 200, true, "Get profile successfully", profile);
-  } catch (error) {
-    return sendResponse(res, 500, false, error);
-  }
-};
-
-const updateProfile = async (req: Request, res: Response) => {
-  try {
-    const data = req.body;
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return sendResponse(
-        res,
-        401,
-        false,
-        "Authorization token is missing or invalid",
-      );
-    }
-    const decodedToken = verifyToken(authHeader);
-    const userId = decodedToken?.id;
-    const profile = await User.findByIdAndUpdate(userId, data, { new: true });
-    if (!profile) {
-      return sendResponse(res, 404, false, "Profile not found");
-    }
-    return sendResponse(
-      res,
-      200,
-      true,
-      "Profile updated successfully",
-      profile,
-    );
-  } catch (error) {
-    return sendResponse(res, 500, false, error);
-  }
-};
-
-const deleteProfile = async (req: Request, res: Response) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return sendResponse(
-        res,
-        401,
-        false,
-        "Authorization token is missing or invalid",
-      );
-    }
-    const decodedToken = verifyToken(authHeader);
-    const userId = decodedToken?.id;
-    const profile = await User.findByIdAndDelete(userId);
-    if (!profile) {
-      return sendResponse(res, 404, false, "Profile not found");
-    }
-    return sendResponse(
-      res,
-      200,
-      true,
-      "Profile deleted successfully",
-      profile,
-    );
-  } catch (error) {
-    return sendResponse(res, 500, false, error);
-  }
-};
-
 const authController = {
-  signUp,
-  signIn,
-  getProfile,
-  updateProfile,
-  deleteProfile,
+  signUpUser,
+  signInUser
 };
 
 export default authController;
