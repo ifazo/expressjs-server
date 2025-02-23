@@ -8,7 +8,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y supervisor redis-server
 
 # Copy package.json and package-lock.json
-COPY package.json package-lock.json ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install
