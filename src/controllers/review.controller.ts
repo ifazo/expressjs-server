@@ -7,8 +7,14 @@ import verifyToken from "../middleware/verifyToken";
 const createReview = async (req: Request, res: Response) => {
   try {
     const data: IReview = req.body;
-    const review = await Review.create(data);
-    await redis.del(`reviews:${data.productId}`);
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return sendResponse(res, 401, false, "You are unauthorized");
+    }
+    const decodedToken = verifyToken(authHeader);
+    const userId = decodedToken?.id;
+    const review = await Review.create({ ...data, userId });
+    await redis.del(`product reviews:${data.productId}`);
     return sendResponse(res, 201, true, "Review created successfully", review);
   } catch (error) {
     return sendResponse(res, 500, false, error);
@@ -21,23 +27,23 @@ const getReviews = async (req: Request, res: Response) => {
     if (!id) {
       return sendResponse(res, 400, false, "Product ID is required");
     }
-    const cachedReviews = await redis.get(`reviews:${id}`);
+    const cachedReviews = await redis.get(`product reviews:${id}`);
     if (cachedReviews) {
       return sendResponse(
         res,
         200,
         true,
-        "Reviews retrieved successfully",
+        "Product Reviews retrieved from redis cache",
         JSON.parse(cachedReviews),
       );
     }
     const reviews = await Review.find({ productId: id });
-    await redis.set(`reviews:${id}`, JSON.stringify(reviews));
+    await redis.set(`product reviews:${id}`, JSON.stringify(reviews));
     return sendResponse(
       res,
       200,
       true,
-      "Reviews retrieved successfully",
+      "Product Reviews retrieved successfully",
       reviews,
     );
   } catch (error) {
@@ -48,6 +54,16 @@ const getReviews = async (req: Request, res: Response) => {
 const getReviewById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const cachedReview = await redis.get(`reviews:${id}`);
+    if (cachedReview) {
+      return sendResponse(
+        res,
+        200,
+        true,
+        "Review retrieved from redis cache",
+        JSON.parse(cachedReview),
+      );
+    }
     const review = await Review.findById(id);
     if (!review) {
       return sendResponse(res, 404, false, "Review not found");
@@ -90,7 +106,8 @@ const updateReviewById = async (req: Request, res: Response) => {
     const updatedReview = await Review.findByIdAndUpdate(id, data, {
       new: true,
     });
-    await redis.del(`reviews:${review.productId}`);
+    await redis.del(`reviews:${id}`);
+    await redis.del(`product reviews:${review.productId}`);
     return sendResponse(
       res,
       200,
@@ -126,7 +143,8 @@ const deleteReviewById = async (req: Request, res: Response) => {
       );
     }
     const deletedReview = await Review.findByIdAndDelete(id);
-    await redis.del(`reviews:${review.productId}`);
+    await redis.del(`reviews:${id}`);
+    await redis.del(`product reviews:${review.productId}`);
     return sendResponse(
       res,
       200,

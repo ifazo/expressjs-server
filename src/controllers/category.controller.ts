@@ -29,7 +29,7 @@ const getCategories = async (req: Request, res: Response) => {
         res,
         200,
         true,
-        "Categories retrieved successfully",
+        "Categories retrieved from redis cache",
         JSON.parse(cachedCategories),
       );
     }
@@ -56,7 +56,7 @@ const getCategoryById = async (req: Request, res: Response) => {
         res,
         200,
         true,
-        "Category retrieved successfully",
+        "Category retrieved from redis cache",
         JSON.parse(cachedCategory),
       );
     }

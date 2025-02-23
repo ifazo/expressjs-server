@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import { Request, Response } from "express";
 import sendResponse from "../middleware/sendResponse";
 import verifyToken from "../middleware/verifyToken";
-import Product from "../models/product.model";
+import Order from "../models/order.model";
 import User from "../models/user.model";
 import { IOrderProduct } from "../models/order.model";
 
@@ -24,8 +24,8 @@ const createPayment = async (req: Request, res: Response) => {
     }
     const { id, name, email } = decodedToken;
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return sendResponse(res, 400, false, "User already exists");
+    if (!existingUser) {
+      return sendResponse(res, 404, false, "User not found.");
     }
     const customer = await stripe.customers.create({
       name,
@@ -53,21 +53,19 @@ const createPayment = async (req: Request, res: Response) => {
     if (!session) {
       return sendResponse(res, 500, false, "Payment session creation failed.");
     }
-    const order = await Product.create({
-      data: {
-        products: products.map((product) => ({
-          ...product,
-          quantity: product.quantity,
-        })),
-        userId: id,
-        total: products.reduce(
-          (acc: number, product: IOrderProduct) =>
-            acc + product.price * product.quantity,
-          0,
-        ),
-        sessionId: session.id,
-        status: "pending",
-      },
+    const order = await Order.create({
+      products: products.map((product) => ({
+        ...product,
+        quantity: product.quantity,
+      })),
+      userId: id,
+      total: products.reduce(
+        (acc: number, product: IOrderProduct) =>
+          acc + product.price * product.quantity,
+        0,
+      ),
+      sessionId: session.id,
+      status: "pending",
     });
     return sendResponse(res, 201, true, "Payment created successfully", order);
   } catch (error) {

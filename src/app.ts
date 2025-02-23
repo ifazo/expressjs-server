@@ -32,7 +32,7 @@ app.get("/", (_req: Request, res: Response) => {
 });
 
 app.get("/api", (_req: Request, res: Response) => {
-  res.send("Server api is running successfully!");
+  res.send("Expressjs Server api is running successfully!");
 });
 
 app.get("/success", (_req: Request, res: Response) => {

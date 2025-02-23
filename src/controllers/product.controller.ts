@@ -20,20 +20,10 @@ const createProduct = async (req: Request, res: Response) => {
   }
 };
 
-const getProductByIds = async (req: Request, res: Response) => {
+const getProducts = async (req: Request, res: Response) => {
   try {
-    const cachedProducts = await redis.get("products");
-    if (cachedProducts) {
-      return sendResponse(
-        res,
-        200,
-        true,
-        "Products retrieved successfully",
-        JSON.parse(cachedProducts),
-      );
-    }
-    const q = req.query.q as string;
-    const category = req.query.category as string;
+    const search = req.query.search as string;
+    const categoryId = req.query.categoryId as string;
     const price = req.query.price as string;
     const rating = req.query.rating as string;
     const sort = req.query.sort as string;
@@ -41,15 +31,15 @@ const getProductByIds = async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string);
 
     let products;
-    if (q) {
+    if (search) {
       products = await Product.find({
         $or: [
-          { name: { $regex: q, $options: "i" } },
-          { description: { $regex: q, $options: "i" } },
+          { name: { $regex: search, $options: "i" } },
+          { description: { $regex: search, $options: "i" } },
         ],
       });
-    } else if (category) {
-      products = await Product.find({ category: category });
+    } else if (categoryId) {
+      products = await Product.find({ categoryId });
     } else if (price) {
       products = await Product.find({ price: { $lt: price } });
     } else if (rating) {
@@ -105,7 +95,7 @@ const getProductById = async (req: Request, res: Response) => {
         res,
         200,
         true,
-        "Product retrieved successfully",
+        "Product retrieved from redis cache",
         JSON.parse(cachedProduct),
       );
     }
@@ -174,7 +164,7 @@ const deleteProductById = async (req: Request, res: Response) => {
 
 const productController = {
   createProduct,
-  getProductByIds,
+  getProducts,
   getRandomProducts,
   getProductById,
   updateProductById,

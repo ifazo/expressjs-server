@@ -4,19 +4,26 @@ import { redis } from "..";
 import sendResponse from "../middleware/sendResponse";
 import verifyToken from "../middleware/verifyToken";
 
-const getUserByIds = async (_req: Request, res: Response) => {
+const getUsers = async (req: Request, res: Response) => {
   try {
+    const { role } = req.query;
+    if (role) {
+      const users = await User.find({ role: role })
+        .select("-password")
+        .sort({ createdAt: -1 });
+      return sendResponse(res, 200, true, "Get users successfully", users);
+    }
     const cachedUsers = await redis.get("users");
     if (cachedUsers) {
       return sendResponse(
         res,
         200,
         true,
-        "Get users successfully",
+        "Get users from redis cache",
         JSON.parse(cachedUsers),
       );
     }
-    const user = await User.find();
+    const user = await User.find().select("-password").sort({ createdAt: -1 });
     await redis.set("users", JSON.stringify(user));
     return sendResponse(res, 200, true, "Get users successfully", user);
   } catch (error) {
@@ -44,7 +51,7 @@ const getUserById = async (req: Request, res: Response) => {
         res,
         200,
         true,
-        "Get user successfully",
+        "Get user from redis cache",
         JSON.parse(cachedUser),
       );
     }
@@ -113,7 +120,7 @@ const deleteUserById = async (req: Request, res: Response) => {
 };
 
 const userController = {
-  getUserByIds,
+  getUsers,
   getUserById,
   updateUserById,
   deleteUserById,

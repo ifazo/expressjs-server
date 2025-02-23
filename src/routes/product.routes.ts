@@ -8,7 +8,7 @@ const router = Router();
 router
   .route("/")
   .post(auth(USER_ROLE.SELLER), productController.createProduct)
-  .get(productController.getProductByIds);
+  .get(productController.getProducts);
 
 router.get("/random", productController.getRandomProducts);
 

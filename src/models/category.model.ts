@@ -10,7 +10,7 @@ export interface ICategory {
 
 const categorySchema = new Schema<ICategory>(
   {
-    name: { type: String, required: true, unique: true },
+    name: { type: String, unique: true, required: true },
     image: { type: String },
     description: { type: String, required: true },
   },

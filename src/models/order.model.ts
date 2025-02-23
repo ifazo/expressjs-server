@@ -19,9 +19,9 @@ const orderSchema: Schema = new Schema<IOrder>(
     products: { type: [{ type: SchemaTypes.Mixed }], required: true },
     total: {
       type: Number,
-      required: true,
       min: 0,
       get: (v: number) => parseFloat(v.toFixed(2)),
+      required: true,
     },
     status: {
       type: String,

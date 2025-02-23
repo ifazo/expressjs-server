@@ -5,7 +5,7 @@ import { USER_ROLE } from "../models/user.model";
 
 const router = Router();
 
-router.route("/").get(auth(USER_ROLE.ADMIN), userController.getUserByIds);
+router.route("/").get(auth(USER_ROLE.ADMIN), userController.getUsers);
 
 router
   .route("/:id")
